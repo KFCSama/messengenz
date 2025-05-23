@@ -1,0 +1,11 @@
+{
+  "extends": "./schema-noyau.json",
+  "fields": {
+    "questionText": {
+      "type": "text"
+    },
+    "luEtAccepte": {
+      "type": "checkbox"
+    }
+  }
+}

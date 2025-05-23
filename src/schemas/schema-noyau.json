@@ -1,0 +1,57 @@
+{
+  "metadata": {
+    "thread": {
+      "title": { "type": "string", "required": true },
+      "participants": { "type": "array", "items": { "type": "string" }, "minItems": 1, "maxItems": 2 },
+      "createdAt": { "type": "string", "format": "date-time", "required": true },
+      "categories": { "type": "array", "items": { "type": "string" } }
+    },
+    "message": {
+      "sender": { "type": "string", "required": true },
+      "sentAt": { "type": "string", "format": "date-time", "required": true }
+    }
+  },
+  "types": {
+    "text": {
+      "validation": {
+        "required": true,
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "checkbox": {
+      "validation": {
+        "required": true,
+        "type": "boolean"
+      }
+    },
+    "multipleChoiceOption": {
+      "validation": {
+        "required": true,
+        "type": "string",
+        "enum": ["option 1", "option 2"]
+      }
+    },
+    "multipleChoiceFPS!Mode": {
+      "validation": {
+        "required": true,
+        "type": "string",
+        "enum": ["Deathmatch", "Battle Royal", "Capture the Flag"]
+      }
+    },
+    "date": {
+      "validation": {
+        "required": true,
+        "type": "string",
+        "format": "date"
+      }
+    },
+    "number": {
+      "validation": {
+        "required": true,
+        "type": "number",
+        "minimum": 0
+      }
+    }
+  }
+}
