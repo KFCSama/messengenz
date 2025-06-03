@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import schemaNoyau from './schemas/schema-noyau.json';
-import schemaLambda from './schemas/schema-lambda.json';
+import validationService from './services/validationService';
+// import schemaNoyau from './schemas/schema-noyau.json';
+// import schemaLambda from './schemas/schema-lambda.json';
 import Message from './components/Message';
 import ThreadSelector from './components/ThreadSelector';
 import PluginManager from './components/PluginManager';
@@ -43,11 +44,15 @@ function App() {
         schemaVersion: '1.0'
       }
     });
-    
-    // Charger le schéma lambda par défaut
-    setPluginSchemas({
-      'lambda': schemaLambda
-    });
+
+    // Vérifiez que le schéma est chargé
+    const checkSchema = async () => {
+      await validationService.init();
+      setPluginSchemas({
+        'lambda': validationService.getSchema('lambda')
+      });
+    };
+    checkSchema();
   }, []);
 
   // Gestion de l'activation/désactivation des plugins
@@ -57,37 +62,6 @@ function App() {
         ? prev.filter(id => id !== pluginId) 
         : [...prev, pluginId]
     );
-  };
-
-  // Validation des données selon le schéma
-  const validate = (data, schema) => {
-    const newErrors = {};
-    
-    Object.entries(schema.fields).forEach(([fieldName, fieldConfig]) => {
-      const fieldType = schemaNoyau.types[fieldConfig.type];
-      const value = data[fieldName];
-      
-      // Vérification du type
-      if (fieldType.validation.type === 'string' && typeof value !== 'string') {
-        newErrors[fieldName] = `Doit être une chaîne de caractères`;
-      }
-      else if (fieldType.validation.type === 'boolean' && typeof value !== 'boolean') {
-        newErrors[fieldName] = `Doit être une case à cocher`;
-      }
-      
-      // Vérification de la longueur minimale
-      if (fieldConfig.minLength && value.length < fieldConfig.minLength) {
-        newErrors[fieldName] = `Doit contenir au moins ${fieldConfig.minLength} caractères`;
-      }
-      
-      // Vérification du champ requis
-      if (fieldType.validation.required && !value) {
-        newErrors[fieldName] = `Ce champ est requis`;
-      }
-    });
-    
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
   };
 
   // Création d'un nouveau fil de discussion
@@ -130,26 +104,56 @@ function App() {
     setErrors({});
   };
 
-  // Envoi d'une question structurée
-  const handleSubmitQuestion = () => {
-    if (validate(questionData, schemaLambda)) {
-      const questionMessage = {
-        ...questionData,
-        sender: 'Gauche',
-        type: 'question',
-        sentAt: new Date().toISOString()
-      };
-      
-      createNewThread(
-        `Question: ${questionData.questionText.substring(0, 20)}${questionData.questionText.length > 20 ? '...' : ''}`,
-        questionMessage
-      );
-      
-      setShowQuestionForm(false);
-      setQuestionData({ questionText: '', luEtAccepte: false });
-      setErrors({});
+  const supportedSchemas = {
+    core: '1.0',
+    extensions: {
+      lambda: '1.0'
     }
   };
+
+  // Envoi d'une question structurée
+  const handleSubmitQuestion = () => {
+    // Vérification de la version du schéma
+    const lambdaSchema = validationService.getSchema('lambda');
+    if (!lambdaSchema) {
+      setErrors({ general: 'Schéma lambda non chargé' });
+      return;
+    }
+
+    // Validation avec AJV
+    const validationResult = validationService.validate(questionData, 'lambda');
+    
+    if (!validationResult.isValid) {
+      const formattedErrors = {};
+      validationResult.errors.forEach(error => {
+        // Meilleure gestion du chemin de l'erreur
+        const fieldName = error.params?.missingProperty || 
+                        error.instancePath?.replace('/', '') || 
+                        'general';
+        formattedErrors[fieldName] = error.message || 'Erreur de validation';
+      });
+      setErrors(formattedErrors);
+      return;
+    }
+
+    // Création du message
+    const questionMessage = {
+      ...questionData,
+      sender: 'Gauche',
+      type: 'question',
+      sentAt: new Date().toISOString()
+    };
+    
+    createNewThread(
+      `Question: ${questionData.questionText.substring(0, 20)}${questionData.questionText.length > 20 ? '...' : ''}`,
+      questionMessage
+    );
+    
+    setShowQuestionForm(false);
+    setQuestionData({ questionText: '', luEtAccepte: false });
+    setErrors({});
+  };
+
 
   return (
     <div className="App">

@@ -1,57 +1,65 @@
 {
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "schema-noyau.json",
+  "type": "object",
   "metadata": {
     "thread": {
-      "title": { "type": "string", "required": true },
-      "participants": { "type": "array", "items": { "type": "string" }, "minItems": 1, "maxItems": 2 },
-      "createdAt": { "type": "string", "format": "date-time", "required": true },
-      "categories": { "type": "array", "items": { "type": "string" } }
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "participants": { 
+          "type": "array", 
+          "items": { "type": "string" }, 
+          "minItems": 1, 
+          "maxItems": 2 
+        },
+        "createdAt": { 
+          "type": "string", 
+          "format": "date-time" 
+        },
+        "categories": { 
+          "type": "array", 
+          "items": { "type": "string" } 
+        }
+      },
+      "required": ["title", "createdAt"]
     },
     "message": {
-      "sender": { "type": "string", "required": true },
-      "sentAt": { "type": "string", "format": "date-time", "required": true }
+      "type": "object",
+      "properties": {
+        "sender": { "type": "string" },
+        "sentAt": { 
+          "type": "string", 
+          "format": "date-time" 
+        }
+      },
+      "required": ["sender", "sentAt"]
     }
   },
-  "types": {
+  "definitions": {
     "text": {
-      "validation": {
-        "required": true,
-        "type": "string",
-        "minLength": 1
-      }
+      "type": "string",
+      "minLength": 1
     },
     "checkbox": {
-      "validation": {
-        "required": true,
-        "type": "boolean"
-      }
+      "type": "boolean",
+      "const": true
     },
     "multipleChoiceOption": {
-      "validation": {
-        "required": true,
-        "type": "string",
-        "enum": ["option 1", "option 2"]
-      }
+      "type": "string",
+      "enum": ["option 1", "option 2"]
     },
-    "multipleChoiceFPS!Mode": {
-      "validation": {
-        "required": true,
-        "type": "string",
-        "enum": ["Deathmatch", "Battle Royal", "Capture the Flag"]
-      }
+    "multipleChoiceFPSMode": {
+      "type": "string",
+      "enum": ["Deathmatch", "Battle Royal", "Capture the Flag"]
     },
     "date": {
-      "validation": {
-        "required": true,
-        "type": "string",
-        "format": "date"
-      }
+      "type": "string",
+      "format": "date"
     },
     "number": {
-      "validation": {
-        "required": true,
-        "type": "number",
-        "minimum": 0
-      }
+      "type": "number",
+      "minimum": 0
     }
   }
 }
