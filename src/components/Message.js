@@ -10,7 +10,7 @@ const Message = ({ message }) => {
       <div className="message-content">
         {message.type === 'question' ? (
           <>
-            <p><strong>Question:</strong> {message.questionTexte}</p>
+            <p><strong>Question:</strong> {message.questionText}</p>
             <p><strong>Accepté:</strong> {message.luEtAccepte ? '✅ Oui' : '❌ Non'}</p>
           </>
         ) : (

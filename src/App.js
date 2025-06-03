@@ -39,7 +39,8 @@ function App() {
       'lambda': {
         name: 'Plugin Lambda',
         version: '1.0',
-        description: 'Gestion des questions simples'
+        description: 'Gestion des questions simples',
+        schemaVersion: '1.0'
       }
     });
     
@@ -96,7 +97,8 @@ function App() {
       title,
       participants: ['Gauche', 'Droite'],
       createdAt: new Date().toISOString(),
-      messages: [firstMessage]
+      messages: [firstMessage],
+      categories: ['general']
     };
     
     setThreads([...threads, newThread]);
