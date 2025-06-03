@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import schemaNoyau from './schemas/schema-noyau.json';
 import schemaLambda from './schemas/schema-lambda.json';
 import Message from './components/Message';
+import ThreadSelector from './components/ThreadSelector';
+import PluginManager from './components/PluginManager';
 import './App.css';
 
 function App() {
@@ -146,43 +148,6 @@ function App() {
       setErrors({});
     }
   };
-
-  // Composant pour sélectionner le fil actif
-  const ThreadSelector = ({ threads, activeThread, setActiveThread }) => (
-    <div className="thread-selector">
-      <h3>Fils de discussion</h3>
-      <ul>
-        {threads.map(thread => (
-          <li 
-            key={thread.id} 
-            className={thread.id === activeThread ? 'active' : ''}
-            onClick={() => setActiveThread(thread.id)}
-          >
-            {thread.title} ({thread.messages.length} messages)
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
-
-  // Composant pour gérer les plugins
-  const PluginManager = ({ availablePlugins, activePlugins, onTogglePlugin }) => (
-    <div className="plugin-manager">
-      <h3>Plugins disponibles</h3>
-      {Object.entries(availablePlugins).map(([id, plugin]) => (
-        <div key={id} className="plugin-item">
-          <label>
-            <input
-              type="checkbox"
-              checked={activePlugins.includes(id)}
-              onChange={() => onTogglePlugin(id)}
-            />
-            {plugin.name} (v{plugin.version}) - {plugin.description}
-          </label>
-        </div>
-      ))}
-    </div>
-  );
 
   return (
     <div className="App">
