@@ -1,5 +1,3 @@
-import React from 'react';
-
 const Message = ({ message }) => {
   return (
     <div className={`message ${message.sender.toLowerCase()}`}>
@@ -12,6 +10,11 @@ const Message = ({ message }) => {
           <>
             <p><strong>Question:</strong> {message.questionText}</p>
             <p><strong>Accepté:</strong> {message.luEtAccepte ? '✅ Oui' : '❌ Non'}</p>
+          </>
+        ) : message.type === 'partie' ? (
+          <>
+            <p><strong>Partie proposée:</strong> {message.questionText}</p>
+            <p><strong>Date:</strong> {new Date(message.date).toLocaleString()}</p>
           </>
         ) : (
           <p>{message.text}</p>

@@ -1,8 +1,14 @@
 import Ajv from 'ajv';
+import addFormats from 'ajv-formats';
 
 class ValidationService {
   constructor() {
-    this.ajv = new Ajv();
+    this.ajv = new Ajv({ 
+      strict: false,
+      allErrors: true,
+      coerceTypes: true // Permet la conversion automatique de types
+    });
+    addFormats(this.ajv);
     this.schemas = {};
     this.validators = {};
   }
@@ -10,14 +16,16 @@ class ValidationService {
   async init() {
     try {
       // Chargement dynamique des schémas
-      const [noyau, lambda] = await Promise.all([
+      const [noyau, lambda, partie] = await Promise.all([
         import('../schemas/schema-noyau.json'),
-        import('../schemas/schema-lambda.json')
+        import('../schemas/schema-lambda.json'),
+        import('../schemas/schema-partie.json'),
       ]);
       
       this.schemas = {
         core: noyau.default,
-        lambda: lambda.default
+        lambda: lambda.default,
+        partie: partie.default
       };
 
       this.compileSchemas();

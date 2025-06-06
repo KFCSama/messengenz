@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import validationService from './services/validationService';
-// import schemaNoyau from './schemas/schema-noyau.json';
-// import schemaLambda from './schemas/schema-lambda.json';
 import Message from './components/Message';
 import ThreadSelector from './components/ThreadSelector';
 import PluginManager from './components/PluginManager';
@@ -12,7 +10,6 @@ function App() {
   const [availablePlugins, setAvailablePlugins] = useState({});
   const [activePlugins, setActivePlugins] = useState(['lambda']); // Par défaut, le plugin lambda est activé
   const [pluginSchemas, setPluginSchemas] = useState({});
-  
   const [threads, setThreads] = useState([
     {
       id: 'main',
@@ -27,11 +24,13 @@ function App() {
   // États pour les messages
   const [leftMessage, setLeftMessage] = useState('');
   const [rightMessage, setRightMessage] = useState('');
+
   const [showQuestionForm, setShowQuestionForm] = useState(false);
-  const [questionData, setQuestionData] = useState({
-    questionText: '',
-    luEtAccepte: false
-  });
+  const [questionData, setQuestionData] = useState({questionText: '', luEtAccepte: false});
+
+  const [showPartieForm, setShowPartieForm] = useState(false);
+  const [partieData, setPartieData] = useState({questionText: '', date: ''});
+
   const [errors, setErrors] = useState({});
 
   // Chargement des plugins disponibles
@@ -40,8 +39,12 @@ function App() {
       'lambda': {
         name: 'Plugin Lambda',
         version: '1.0',
-        description: 'Gestion des questions simples',
-        schemaVersion: '1.0'
+        description: 'Gestion des questions simples'
+      },
+      'partie': {
+        name: 'Plugin Partie',
+        version: '1.0',
+        description: 'Organisation de parties de jeu'
       }
     });
 
@@ -49,7 +52,8 @@ function App() {
     const checkSchema = async () => {
       await validationService.init();
       setPluginSchemas({
-        'lambda': validationService.getSchema('lambda')
+        'lambda': validationService.getSchema('lambda'),
+        'partie': validationService.getSchema('partie')
       });
     };
     checkSchema();
@@ -104,16 +108,9 @@ function App() {
     setErrors({});
   };
 
-  const supportedSchemas = {
-    core: '1.0',
-    extensions: {
-      lambda: '1.0'
-    }
-  };
-
   // Envoi d'une question structurée
   const handleSubmitQuestion = () => {
-    // Vérification de la version du schéma
+    // Vérification de la version des schémas
     const lambdaSchema = validationService.getSchema('lambda');
     if (!lambdaSchema) {
       setErrors({ general: 'Schéma lambda non chargé' });
@@ -154,6 +151,44 @@ function App() {
     setErrors({});
   };
 
+  // Envoi d'une proposition de partie
+  const handleSubmitPartie = () => {
+    const partieSchema = validationService.getSchema('partie');
+    if (!partieSchema) {
+      setErrors({ general: 'Schéma partie non chargé' });
+      return;
+    }
+
+    const validationResult = validationService.validate(partieData, 'partie');
+    
+    if (!validationResult.isValid) {
+      const formattedErrors = {};
+      validationResult.errors.forEach(error => {
+        const fieldName = error.params?.missingProperty || 
+                        error.instancePath?.replace('/', '') || 
+                        'general';
+        formattedErrors[fieldName] = error.message || 'Erreur de validation';
+      });
+      setErrors(formattedErrors);
+      return;
+    }
+
+    const partieMessage = {
+      ...partieData,
+      sender: 'Gauche',
+      type: 'partie',
+      sentAt: new Date().toISOString()
+    };
+    
+    createNewThread(
+      `Partie: ${partieData.questionText.substring(0, 20)}${partieData.questionText.length > 20 ? '...' : ''}`,
+      partieMessage
+    );
+    
+    setShowPartieForm(false);
+    setPartieData({ questionText: '', date: '' });
+    setErrors({});
+  };
 
   return (
     <div className="App">
@@ -195,6 +230,14 @@ function App() {
                   {showQuestionForm ? 'Annuler' : 'Poser une question'}
                 </button>
               )}
+              {activePlugins.includes('partie') && (
+                <button 
+                  onClick={() => setShowPartieForm(!showPartieForm)}
+                  className="toggle-question-btn"
+                >
+                  {showPartieForm ? 'Annuler' : 'Proposer une partie'}
+                </button>
+              )}
               
               {showQuestionForm && (
                 <div className="question-form">
@@ -230,6 +273,40 @@ function App() {
                 </div>
               )}
               
+              {showPartieForm && (
+                <div className="question-form">
+                  <textarea
+                    value={partieData.questionText}
+                    onChange={(e) => setPartieData({
+                      ...partieData,
+                      questionText: e.target.value
+                    })}
+                    placeholder="Proposez un jeu..."
+                  />
+                  {errors.questionText && <p className="error">{errors.questionText}</p>}
+                  
+                  <label>
+                    Date et heure:
+                    <input
+                      type="datetime-local"
+                      value={partieData.date}
+                      onChange={(e) => setPartieData({
+                        ...partieData,
+                        date: e.target.value
+                      })}
+                    />
+                  </label>
+                  {errors.date && <p className="error">{errors.date}</p>}
+                  
+                  <button 
+                    onClick={handleSubmitPartie}
+                    className="submit-btn"
+                  >
+                    Proposer la partie
+                  </button>
+                </div>
+              )}
+
               <textarea
                 value={leftMessage}
                 onChange={(e) => setLeftMessage(e.target.value)}
