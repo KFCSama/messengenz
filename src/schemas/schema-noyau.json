@@ -1,8 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "schema-noyau.json",
-  "type": "object",
-  "metadata": {
+  "definitions": {
     "thread": {
       "type": "object",
       "properties": {
@@ -34,9 +33,7 @@
         }
       },
       "required": ["sender", "sentAt"]
-    }
-  },
-  "definitions": {
+    },
     "text": {
       "type": "string",
       "minLength": 1
