@@ -16,16 +16,18 @@ class ValidationService {
   async init() {
     try {
       // Chargement dynamique des schémas
-      const [noyau, lambda, partie] = await Promise.all([
+      const [noyau, lambda, partie, fpsMode] = await Promise.all([
         import('../schemas/schema-noyau.json'),
         import('../schemas/schema-lambda.json'),
         import('../schemas/schema-partie.json'),
+        import('../schemas/schema-fps-mode.json'),
       ]);
       
       this.schemas = {
         core: noyau.default,
         lambda: lambda.default,
-        partie: partie.default
+        partie: partie.default,
+        fpsMode: fpsMode.default,
       };
 
       this.compileSchemas();
