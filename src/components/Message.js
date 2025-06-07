@@ -16,6 +16,12 @@ const Message = ({ message }) => {
             <p><strong>Partie proposée:</strong> {message.questionText}</p>
             <p><strong>Date:</strong> {new Date(message.date).toLocaleString()}</p>
           </>
+        ) : message.type === 'fps-mode' ? (
+          <>
+            <p><strong>Jeu FPS:</strong> {message.questionText}</p>
+            <p><strong>Date:</strong> {new Date(message.date).toLocaleString()}</p>
+            {message.mode && <p><strong>Type:</strong> {message.mode}</p>}
+          </>
         ) : (
           <p>{message.text}</p>
         )}

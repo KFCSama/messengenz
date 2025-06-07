@@ -1,0 +1,9 @@
+.form-group {
+  flex: 1;
+  padding: 15px;
+  border: 1px solid #eee;
+  border-radius: 4px;
+  background-color: #f5f5f5;
+  --color: gray;
+  border-top: 3px solid var(--color);
+}

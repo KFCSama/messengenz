@@ -5,20 +5,10 @@
   "required": ["questionText", "luEtAccepte"],
   "properties": {
     "questionText": {
-      "$ref": "#/definitions/textField"
+      "$ref": "schema-noyau.json#/definitions/text"
     },
     "luEtAccepte": {
-      "$ref": "#/definitions/checkboxField"
-    }
-  },
-  "definitions": {
-    "textField": {
-      "type": "string",
-      "minLength": 1
-    },
-    "checkboxField": {
-      "type": "boolean",
-      "const": true
+      "$ref": "schema-noyau.json#/definitions/checkbox"
     }
   }
 }

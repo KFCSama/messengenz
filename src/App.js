@@ -3,6 +3,7 @@ import validationService from './services/validationService';
 import Message from './components/Message';
 import ThreadSelector from './components/ThreadSelector';
 import PluginManager from './components/PluginManager';
+import ClientInput from './components/ClientInput';
 import './App.css';
 
 function App() {
@@ -25,12 +26,6 @@ function App() {
   const [leftMessage, setLeftMessage] = useState('');
   const [rightMessage, setRightMessage] = useState('');
 
-  const [showQuestionForm, setShowQuestionForm] = useState(false);
-  const [questionData, setQuestionData] = useState({questionText: '', luEtAccepte: false});
-
-  const [showPartieForm, setShowPartieForm] = useState(false);
-  const [partieData, setPartieData] = useState({questionText: '', date: ''});
-
   const [errors, setErrors] = useState({});
 
   // Chargement des plugins disponibles
@@ -45,6 +40,11 @@ function App() {
         name: 'Plugin Partie',
         version: '1.0',
         description: 'Organisation de parties de jeu'
+      },
+      'fps-mode': {
+        name: 'Plugin FPS Mode',
+        version: '1.0',
+        description: 'Mode de jeu FPS'
       }
     });
 
@@ -53,7 +53,8 @@ function App() {
       await validationService.init();
       setPluginSchemas({
         'lambda': validationService.getSchema('lambda'),
-        'partie': validationService.getSchema('partie')
+        'partie': validationService.getSchema('partie'),
+        'fps-mode': validationService.getSchema('fps-mode')
       });
     };
     checkSchema();
@@ -69,14 +70,15 @@ function App() {
   };
 
   // Création d'un nouveau fil de discussion
-  const createNewThread = (title, firstMessage) => {
+  const createNewThread = (title, firstMessage, schemas) => {
     const newThread = {
       id: `thread-${Date.now()}`,
       title,
       participants: ['Gauche', 'Droite'],
       createdAt: new Date().toISOString(),
       messages: [firstMessage],
-      categories: ['general']
+      categories: ['general'],
+      schemas
     };
     
     setThreads([...threads, newThread]);
@@ -108,87 +110,6 @@ function App() {
     setErrors({});
   };
 
-  // Envoi d'une question structurée
-  const handleSubmitQuestion = () => {
-    // Vérification de la version des schémas
-    const lambdaSchema = validationService.getSchema('lambda');
-    if (!lambdaSchema) {
-      setErrors({ general: 'Schéma lambda non chargé' });
-      return;
-    }
-
-    // Validation avec AJV
-    const validationResult = validationService.validate(questionData, 'lambda');
-    
-    if (!validationResult.isValid) {
-      const formattedErrors = {};
-      validationResult.errors.forEach(error => {
-        // Meilleure gestion du chemin de l'erreur
-        const fieldName = error.params?.missingProperty || 
-                        error.instancePath?.replace('/', '') || 
-                        'general';
-        formattedErrors[fieldName] = error.message || 'Erreur de validation';
-      });
-      setErrors(formattedErrors);
-      return;
-    }
-
-    // Création du message
-    const questionMessage = {
-      ...questionData,
-      sender: 'Gauche',
-      type: 'question',
-      sentAt: new Date().toISOString()
-    };
-    
-    createNewThread(
-      `Question: ${questionData.questionText.substring(0, 20)}${questionData.questionText.length > 20 ? '...' : ''}`,
-      questionMessage
-    );
-    
-    setShowQuestionForm(false);
-    setQuestionData({ questionText: '', luEtAccepte: false });
-    setErrors({});
-  };
-
-  // Envoi d'une proposition de partie
-  const handleSubmitPartie = () => {
-    const partieSchema = validationService.getSchema('partie');
-    if (!partieSchema) {
-      setErrors({ general: 'Schéma partie non chargé' });
-      return;
-    }
-
-    const validationResult = validationService.validate(partieData, 'partie');
-    
-    if (!validationResult.isValid) {
-      const formattedErrors = {};
-      validationResult.errors.forEach(error => {
-        const fieldName = error.params?.missingProperty || 
-                        error.instancePath?.replace('/', '') || 
-                        'general';
-        formattedErrors[fieldName] = error.message || 'Erreur de validation';
-      });
-      setErrors(formattedErrors);
-      return;
-    }
-
-    const partieMessage = {
-      ...partieData,
-      sender: 'Gauche',
-      type: 'partie',
-      sentAt: new Date().toISOString()
-    };
-    
-    createNewThread(
-      `Partie: ${partieData.questionText.substring(0, 20)}${partieData.questionText.length > 20 ? '...' : ''}`,
-      partieMessage
-    );
-    
-    setShowPartieForm(false);
-    setPartieData({ questionText: '', date: '' });
-    setErrors({});
-  };
 
   return (
     <div className="App">
@@ -219,121 +140,22 @@ function App() {
           </div>
           
           <div className="message-forms">
-            <div className="left-form">
-              <h3>Client Gauche</h3>
-              
-              {activePlugins.includes('lambda') && (
-                <button 
-                  onClick={() => setShowQuestionForm(!showQuestionForm)}
-                  className="toggle-question-btn"
-                >
-                  {showQuestionForm ? 'Annuler' : 'Poser une question'}
-                </button>
-              )}
-              {activePlugins.includes('partie') && (
-                <button 
-                  onClick={() => setShowPartieForm(!showPartieForm)}
-                  className="toggle-question-btn"
-                >
-                  {showPartieForm ? 'Annuler' : 'Proposer une partie'}
-                </button>
-              )}
-              
-              {showQuestionForm && (
-                <div className="question-form">
-                  <textarea
-                    value={questionData.questionText}
-                    onChange={(e) => setQuestionData({
-                      ...questionData,
-                      questionText: e.target.value
-                    })}
-                    placeholder="Écrivez votre question ici..."
-                  />
-                  {errors.questionText && <p className="error">{errors.questionText}</p>}
-                  
-                  <label className="checkbox-label">
-                    <input
-                      type="checkbox"
-                      checked={questionData.luEtAccepte}
-                      onChange={(e) => setQuestionData({
-                        ...questionData,
-                        luEtAccepte: e.target.checked
-                      })}
-                    />
-                    Lu et accepté
-                  </label>
-                  {errors.luEtAccepte && <p className="error">{errors.luEtAccepte}</p>}
-                  
-                  <button 
-                    onClick={handleSubmitQuestion}
-                    className="submit-btn"
-                  >
-                    Envoyer la question
-                  </button>
-                </div>
-              )}
-              
-              {showPartieForm && (
-                <div className="question-form">
-                  <textarea
-                    value={partieData.questionText}
-                    onChange={(e) => setPartieData({
-                      ...partieData,
-                      questionText: e.target.value
-                    })}
-                    placeholder="Proposez un jeu..."
-                  />
-                  {errors.questionText && <p className="error">{errors.questionText}</p>}
-                  
-                  <label>
-                    Date et heure:
-                    <input
-                      type="datetime-local"
-                      value={partieData.date}
-                      onChange={(e) => setPartieData({
-                        ...partieData,
-                        date: e.target.value
-                      })}
-                    />
-                  </label>
-                  {errors.date && <p className="error">{errors.date}</p>}
-                  
-                  <button 
-                    onClick={handleSubmitPartie}
-                    className="submit-btn"
-                  >
-                    Proposer la partie
-                  </button>
-                </div>
-              )}
-
-              <textarea
-                value={leftMessage}
-                onChange={(e) => setLeftMessage(e.target.value)}
-                placeholder="Écrivez votre message ici..."
-              />
-              <button 
-                onClick={() => sendMessage(leftMessage, 'Gauche')}
-                className="send-btn"
-              >
-                Envoyer
-              </button>
-            </div>
-            
-            <div className="right-form">
-              <h3>Client Droite</h3>
-              <textarea
-                value={rightMessage}
-                onChange={(e) => setRightMessage(e.target.value)}
-                placeholder="Écrivez votre message ici..."
-              />
-              <button 
-                onClick={() => sendMessage(rightMessage, 'Droite')}
-                className="send-btn"
-              >
-                Envoyer
-              </button>
-            </div>
+            <ClientInput
+              side="Gauche"
+              color="#4285f4"
+              activePlugins={activePlugins}
+              availablePlugins={availablePlugins}
+              onSendMessage={(...args) => {sendMessage(...args)}}
+              onCreateNewThread={createNewThread}
+            />
+            <ClientInput
+              side="Droite"
+              color="#34a853"
+              activePlugins={activePlugins}
+              availablePlugins={availablePlugins}
+              onSendMessage={(...args) => {sendMessage(...args)}}
+              onCreateNewThread={createNewThread}
+            />
           </div>
         </div>
       </div>
