@@ -3,8 +3,7 @@
   "$id": "schema-partie-reponse.json",
   "type": "object",
   "required": [
-    "lu",
-    "date"
+    "response"
   ],
   "definitions": {
     "yesResponse": {
@@ -27,7 +26,9 @@
           "const": false
         },
         "newDate": {
-          "$ref": "schema-noyau.json#/definitions/dateTime"
+          "type": "string",
+          "format": "date-time",
+          "description": "Date au format ISO 8601 (YYYY-MM-DDTHH:MM:SSZ)"
         }
       },
       "required": [
@@ -37,9 +38,6 @@
     }
   },
   "properties": {
-    "read": {
-      "$ref": "schema-noyau.json#/definitions/checkbox"
-    },
     "response": {
       "anyOf": [
         {
