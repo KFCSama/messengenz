@@ -168,8 +168,13 @@ function App() {
       return;
     }
 
-    const validationResult = validationService.validate(partieData, 'partie');
-    
+    const isoDate = partieData.date ? new Date(partieData.date).toISOString() : '';
+
+    const validationResult = validationService.validate(
+      { ...partieData, date: isoDate },
+      'partie'
+    );    
+
     if (!validationResult.isValid) {
       const formattedErrors = {};
       validationResult.errors.forEach(error => {
@@ -207,14 +212,19 @@ function App() {
       return;
     }
 
+    const isoDate = partieData.date ? new Date(partieData.date).toISOString() : '';
+
     // Ajout des secondes si nécessaire
     const dataToValidate = {
       ...fpsModeData,
       date: fpsModeData.date.includes(':00') ? fpsModeData.date : fpsModeData.date + ':00'
     };
 
-    const validationResult = validationService.validate(dataToValidate, 'fpsMode');
-    
+    const validationResult = validationService.validate(
+      { ...partieData, date: isoDate },
+      'fps-mode'
+    );    
+
     if (!validationResult.isValid) {
       const formattedErrors = {};
       validationResult.errors.forEach(error => {
