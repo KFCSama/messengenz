@@ -78,14 +78,15 @@ function App() {
   };
 
   // Création d'un nouveau fil de discussion
-  const createNewThread = (title, firstMessage) => {
+  const createNewThread = (title, firstMessage, schemas) => {
     const newThread = {
       id: `thread-${Date.now()}`,
       title,
       participants: ['Gauche', 'Droite'],
       createdAt: new Date().toISOString(),
       messages: [firstMessage],
-      categories: ['general']
+      categories: ['general'],
+      schemas
     };
     
     setThreads([...threads, newThread]);
@@ -147,12 +148,14 @@ function App() {
       ...questionData,
       sender: 'Gauche',
       type: 'question',
-      sentAt: new Date().toISOString()
+      sentAt: new Date().toISOString(),
+      schema: { name: 'lambda', version: availablePlugins['lambda'].version }
     };
     
     createNewThread(
       `Question: ${questionData.questionText.substring(0, 20)}${questionData.questionText.length > 20 ? '...' : ''}`,
-      questionMessage
+      questionMessage,
+      [{ name: 'lambda', version: availablePlugins['lambda'].version }]
     );
     
     setShowQuestionForm(false);
@@ -191,12 +194,14 @@ function App() {
       ...partieData,
       sender: 'Gauche',
       type: 'partie',
-      sentAt: new Date().toISOString()
+      sentAt: new Date().toISOString(),
+      schema: { name: 'partie', version: availablePlugins['partie'].version }
     };
     
     createNewThread(
       `Partie: ${partieData.questionText.substring(0, 20)}${partieData.questionText.length > 20 ? '...' : ''}`,
-      partieMessage
+      partieMessage,
+      [{ name: 'partie', version: availablePlugins['partie'].version }]
     );
     
     setShowPartieForm(false);
@@ -241,12 +246,14 @@ function App() {
       ...dataToValidate,
       sender: 'Gauche',
       type: 'fps-mode',
-      sentAt: new Date().toISOString()
+      sentAt: new Date().toISOString(),
+      schema: { name: 'fps-mode', version: availablePlugins['fps-mode'].version }
     };
     
     createNewThread(
       `FPS ${fpsModeData.mode}: ${fpsModeData.questionText.substring(0, 20)}${fpsModeData.questionText.length > 20 ? '...' : ''}`,
-      fpsModeMessage
+      fpsModeMessage,
+      [{ name: 'fps-mode', version: availablePlugins['fps-mode'].version }]
     );
     
     setShowFpsModeForm(false);
