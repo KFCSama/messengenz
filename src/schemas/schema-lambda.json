@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "schema-lambda.json",
+  "type": "object",
+  "required": ["questionText", "luEtAccepte"],
+  "properties": {
+    "questionText": {
+      "$ref": "#/definitions/textField"
+    },
+    "luEtAccepte": {
+      "$ref": "#/definitions/checkboxField"
+    }
+  },
+  "definitions": {
+    "textField": {
+      "type": "string",
+      "minLength": 1
+    },
+    "checkboxField": {
+      "type": "boolean",
+      "const": true
+    }
+  }
+}
