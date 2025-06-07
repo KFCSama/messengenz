@@ -296,7 +296,7 @@ function App() {
               {activePlugins.includes('lambda') && (
                 <button 
                   onClick={() => setShowQuestionForm(!showQuestionForm)}
-                  className="toggle-question-btn"
+                  className={`toggle-question-btn${showQuestionForm ? ' active cancel-btn' : ''}`}
                 >
                   {showQuestionForm ? 'Annuler' : 'Poser une question'}
                 </button>
@@ -304,7 +304,7 @@ function App() {
               {activePlugins.includes('partie') && (
                 <button 
                   onClick={() => setShowPartieForm(!showPartieForm)}
-                  className="toggle-question-btn"
+                  className={`toggle-question-btn${showQuestionForm ? ' active cancel-btn' : ''}`}
                 >
                   {showPartieForm ? 'Annuler' : 'Proposer une partie'}
                 </button>
@@ -312,7 +312,7 @@ function App() {
               {activePlugins.includes('fps-mode') && (
                 <button 
                   onClick={() => setShowFpsModeForm(!showFpsModeForm)}
-                  className="toggle-question-btn"
+                  className={`toggle-question-btn${showQuestionForm ? ' active cancel-btn' : ''}`}
                 >
                   {showFpsModeForm ? 'Annuler' : 'Proposer un FPS Mode'}
                 </button>
