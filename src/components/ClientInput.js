@@ -229,7 +229,7 @@ export default function ClientInput({
             {activePlugins.includes("partie") && (
                 <button
                     onClick={() => setShowPartieForm(!showPartieForm)}
-                    className={`toggle-question-btn${showQuestionForm ? ' active cancel-btn' : ''}`}
+                    className={`toggle-question-btn${showPartieForm ? ' active cancel-btn' : ''}`}
                 >
                     {showPartieForm ? "Annuler" : "Proposer une partie"}
                 </button>
@@ -237,7 +237,7 @@ export default function ClientInput({
             {activePlugins.includes("fps-mode") && (
                 <button
                     onClick={() => setShowFpsModeForm(!showFpsModeForm)}
-                    className={`toggle-question-btn${showQuestionForm ? ' active cancel-btn' : ''}`}
+                    className={`toggle-question-btn${showFpsModeForm ? ' active cancel-btn' : ''}`}
                 >
                     {showFpsModeForm ? "Annuler" : "Proposer un FPS Mode"}
                 </button>
