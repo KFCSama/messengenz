@@ -22,13 +22,19 @@ class ValidationService {
         import('../schemas/schema-partie.json'),
         import('../schemas/schema-fps-mode.json'),
       ]);
-      
+    
       this.schemas = {
         core: noyau.default,
         lambda: lambda.default,
         partie: partie.default,
         'fps-mode': fpsMode.default,
       };
+
+      // Ajoute tous les schémas à AJV pour la résolution des $ref
+      this.ajv.addSchema(noyau.default, 'schema-noyau.json');
+      this.ajv.addSchema(lambda.default, 'schema-lambda.json');
+      this.ajv.addSchema(partie.default, 'schema-partie.json');
+      this.ajv.addSchema(fpsMode.default, 'schema-fps-mode.json');
 
       this.compileSchemas();
     } catch (error) {

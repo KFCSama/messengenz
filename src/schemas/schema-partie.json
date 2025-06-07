@@ -5,21 +5,10 @@
   "required": ["questionText", "date"],
   "properties": {
     "questionText": {
-      "$ref": "#/definitions/textField"
+      "$ref": "schema-noyau.json#/definitions/text"
     },
     "date": {
-      "$ref": "#/definitions/date"
-    }
-  },
-  "definitions": {
-    "textField": {
-      "type": "string",
-      "minLength": 1
-    },
-    "date": {
-      "type": "string",
-      "format": "date-time",
-      "description": "Date au format ISO 8601 (YYYY-MM-DDTHH:MM:SSZ)"
+      "$ref": "schema-noyau.json#/definitions/dateTime"
     }
   }
 }
