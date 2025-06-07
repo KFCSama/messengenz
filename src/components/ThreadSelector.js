@@ -11,11 +11,6 @@ const ThreadSelector = ({ threads, activeThread, setActiveThread }) => (
           onClick={() => setActiveThread(thread.id)}
         >
           {thread.title} ({thread.messages.length} messages)
-          {thread.schemas && thread.schemas.length > 0 && (
-            <div style={{ fontSize: '0.85em', color: '#888' }}>
-              Schémas : {thread.schemas.map(s => `${s.name} v${s.version}`).join(', ')}
-            </div>
-          )}
         </li>
       ))}
     </ul>
