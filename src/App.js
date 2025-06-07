@@ -23,9 +23,7 @@ function App() {
   const [activeThread, setActiveThread] = useState('main');
   
   // États pour les messages
-  const [leftMessage, setLeftMessage] = useState('');
-  const [rightMessage, setRightMessage] = useState('');
-
+  
   const [errors, setErrors] = useState({});
 
   // Chargement des plugins disponibles
@@ -105,9 +103,7 @@ function App() {
         : thread
     ));
     
-    if (sender === 'Gauche') setLeftMessage('');
-    else setRightMessage('');
-    setErrors({});
+        setErrors({});
   };
 
 

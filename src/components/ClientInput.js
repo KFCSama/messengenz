@@ -393,7 +393,10 @@ export default function ClientInput({
                 placeholder="Écrivez votre message ici..."
             />
             <button
-                onClick={() => onSendMessage(message, side)}
+                onClick={() => {
+                    onSendMessage(message, side);
+                    setMessage("");
+                }}
                 className="send-btn"
             >
                 Envoyer
