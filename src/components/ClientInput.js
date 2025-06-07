@@ -82,7 +82,7 @@ export default function ClientInput({
                 questionData.questionText.length > 20 ? "..." : ""
             }`,
             questionMessage,
-            [{ name: "lambda", version: availablePlugins["lambda"].version }]
+            { name: "lambda", version: availablePlugins["lambda"].version }
         );
 
         setShowQuestionForm(false);
@@ -138,7 +138,7 @@ export default function ClientInput({
                 partieData.questionText.length > 20 ? "..." : ""
             }`,
             partieMessage,
-            [{ name: "partie", version: availablePlugins["partie"].version }]
+            { name: "partie", version: availablePlugins["partie"].version }
         );
 
         setShowPartieForm(false);
@@ -204,12 +204,10 @@ export default function ClientInput({
                 20
             )}${fpsModeData.questionText.length > 20 ? "..." : ""}`,
             fpsModeMessage,
-            [
-                {
-                    name: "fps-mode",
-                    version: availablePlugins["fps-mode"].version,
-                },
-            ]
+            {
+                name: "fps-mode",
+                version: availablePlugins["fps-mode"].version,
+            },
         );
 
         setShowFpsModeForm(false);

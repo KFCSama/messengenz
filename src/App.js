@@ -23,7 +23,7 @@ function App() {
   const [activeThread, setActiveThread] = useState('main');
   
   // États pour les messages
-  
+
   const [errors, setErrors] = useState({});
 
   // Chargement des plugins disponibles
@@ -68,7 +68,7 @@ function App() {
   };
 
   // Création d'un nouveau fil de discussion
-  const createNewThread = (title, firstMessage, schemas) => {
+  const createNewThread = (title, firstMessage, schema) => {
     const newThread = {
       id: `thread-${Date.now()}`,
       title,
@@ -76,7 +76,7 @@ function App() {
       createdAt: new Date().toISOString(),
       messages: [firstMessage],
       categories: ['general'],
-      schemas
+      schema
     };
     
     setThreads([...threads, newThread]);
@@ -103,7 +103,7 @@ function App() {
         : thread
     ));
     
-        setErrors({});
+    setErrors({});
   };
 
 
