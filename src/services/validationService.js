@@ -53,9 +53,9 @@ class ValidationService {
   getSchemaDefinition(typeName) {
     if (!this.schemas.core) return null;
     
-    // Recherche dans les types du schéma noyau
-    const typeDefinition = this.schemas.core.types[typeName];
-    if (typeDefinition) return typeDefinition.validation;
+    // Recherche dans les définitions du schéma noyau
+    const typeDefinition = this.schemas.core.definitions[typeName];
+    if (typeDefinition) return typeDefinition;
     
     return null;
   }
