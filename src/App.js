@@ -31,6 +31,9 @@ function App() {
   const [showPartieForm, setShowPartieForm] = useState(false);
   const [partieData, setPartieData] = useState({questionText: '', date: ''});
 
+  const [showFpsModeForm, setShowFpsModeForm] = useState(false);
+  const [fpsModeData, setFpsModeData] = useState({questionText: '', date: '', mode: 'Deathmatch'});
+
   const [errors, setErrors] = useState({});
 
   // Chargement des plugins disponibles
@@ -45,6 +48,11 @@ function App() {
         name: 'Plugin Partie',
         version: '1.0',
         description: 'Organisation de parties de jeu'
+      },
+      'fps-mode': {
+        name: 'Plugin FPS Mode',
+        version: '1.0',
+        description: 'Mode de jeu FPS'
       }
     });
 
@@ -53,7 +61,8 @@ function App() {
       await validationService.init();
       setPluginSchemas({
         'lambda': validationService.getSchema('lambda'),
-        'partie': validationService.getSchema('partie')
+        'partie': validationService.getSchema('partie'),
+        'fps-mode': validationService.getSchema('fps-mode')
       });
     };
     checkSchema();
@@ -69,14 +78,15 @@ function App() {
   };
 
   // Création d'un nouveau fil de discussion
-  const createNewThread = (title, firstMessage) => {
+  const createNewThread = (title, firstMessage, schemas) => {
     const newThread = {
       id: `thread-${Date.now()}`,
       title,
       participants: ['Gauche', 'Droite'],
       createdAt: new Date().toISOString(),
       messages: [firstMessage],
-      categories: ['general']
+      categories: ['general'],
+      schemas
     };
     
     setThreads([...threads, newThread]);
@@ -138,12 +148,14 @@ function App() {
       ...questionData,
       sender: 'Gauche',
       type: 'question',
-      sentAt: new Date().toISOString()
+      sentAt: new Date().toISOString(),
+      schema: { name: 'lambda', version: availablePlugins['lambda'].version }
     };
     
     createNewThread(
       `Question: ${questionData.questionText.substring(0, 20)}${questionData.questionText.length > 20 ? '...' : ''}`,
-      questionMessage
+      questionMessage,
+      [{ name: 'lambda', version: availablePlugins['lambda'].version }]
     );
     
     setShowQuestionForm(false);
@@ -159,8 +171,13 @@ function App() {
       return;
     }
 
-    const validationResult = validationService.validate(partieData, 'partie');
-    
+    const isoDate = partieData.date ? new Date(partieData.date).toISOString() : '';
+
+    const validationResult = validationService.validate(
+      { ...partieData, date: isoDate },
+      'partie'
+    );    
+
     if (!validationResult.isValid) {
       const formattedErrors = {};
       validationResult.errors.forEach(error => {
@@ -177,16 +194,70 @@ function App() {
       ...partieData,
       sender: 'Gauche',
       type: 'partie',
-      sentAt: new Date().toISOString()
+      sentAt: new Date().toISOString(),
+      schema: { name: 'partie', version: availablePlugins['partie'].version }
     };
     
     createNewThread(
       `Partie: ${partieData.questionText.substring(0, 20)}${partieData.questionText.length > 20 ? '...' : ''}`,
-      partieMessage
+      partieMessage,
+      [{ name: 'partie', version: availablePlugins['partie'].version }]
     );
     
     setShowPartieForm(false);
     setPartieData({ questionText: '', date: '' });
+    setErrors({});
+  };
+
+  // Envoi d'une proposition de partie en mode FPS
+  const handleSubmitFpsMode = () => {
+    const fpsModeSchema = validationService.getSchema('fps-mode');
+    if (!fpsModeSchema) {
+      setErrors({ general: 'Schéma FPS mode non chargé' });
+      return;
+    }
+
+    const isoDate = fpsModeData.date ? new Date(fpsModeData.date).toISOString() : '';
+
+    // Ajout des secondes si nécessaire
+    const dataToValidate = {
+      ...fpsModeData,
+      date: fpsModeData.date.includes(':00') ? fpsModeData.date : fpsModeData.date + ':00'
+    };
+
+    const validationResult = validationService.validate(
+      { ...fpsModeData, date: isoDate },
+      'fps-mode'
+    );    
+
+    if (!validationResult.isValid) {
+      const formattedErrors = {};
+      validationResult.errors.forEach(error => {
+        const fieldName = error.params?.missingProperty || 
+                        error.instancePath?.replace('/', '') || 
+                        'general';
+        formattedErrors[fieldName] = error.message || 'Erreur de validation';
+      });
+      setErrors(formattedErrors);
+      return;
+    }
+
+    const fpsModeMessage = {
+      ...dataToValidate,
+      sender: 'Gauche',
+      type: 'fps-mode',
+      sentAt: new Date().toISOString(),
+      schema: { name: 'fps-mode', version: availablePlugins['fps-mode'].version }
+    };
+    
+    createNewThread(
+      `FPS ${fpsModeData.mode}: ${fpsModeData.questionText.substring(0, 20)}${fpsModeData.questionText.length > 20 ? '...' : ''}`,
+      fpsModeMessage,
+      [{ name: 'fps-mode', version: availablePlugins['fps-mode'].version }]
+    );
+    
+    setShowFpsModeForm(false);
+    setFpsModeData({ questionText: '', date: '', mode: 'Deathmatch' });
     setErrors({});
   };
 
@@ -236,6 +307,14 @@ function App() {
                   className="toggle-question-btn"
                 >
                   {showPartieForm ? 'Annuler' : 'Proposer une partie'}
+                </button>
+              )}
+              {activePlugins.includes('fps-mode') && (
+                <button 
+                  onClick={() => setShowFpsModeForm(!showFpsModeForm)}
+                  className="toggle-question-btn"
+                >
+                  {showFpsModeForm ? 'Annuler' : 'Proposer un FPS Mode'}
                 </button>
               )}
               
@@ -303,6 +382,55 @@ function App() {
                     className="submit-btn"
                   >
                     Proposer la partie
+                  </button>
+                </div>
+              )}
+
+              {showFpsModeForm && (
+                <div className="question-form">
+                  <textarea
+                    value={fpsModeData.questionText}
+                    onChange={(e) => setFpsModeData({
+                      ...fpsModeData,
+                      questionText: e.target.value
+                    })}
+                    placeholder="Proposez un jeu FPS..."
+                  />
+                  {errors.questionText && <p className="error">{errors.questionText}</p>}
+                  
+                  <label>
+                    Mode de jeu:
+                    <select
+                      value={fpsModeData.mode}
+                      onChange={(e) => setFpsModeData({
+                        ...fpsModeData,
+                        mode: e.target.value
+                      })}
+                    >
+                      <option value="Deathmatch">Deathmatch</option>
+                      <option value="Battle Royal">Battle Royal</option>
+                      <option value="Capture the Flag">Capture the Flag</option>
+                    </select>
+                  </label>
+
+                  <label>
+                    Date et heure:
+                    <input
+                      type="datetime-local"
+                      value={fpsModeData.date}
+                      onChange={(e) => setFpsModeData({
+                        ...fpsModeData,
+                        date: e.target.value
+                      })}
+                    />
+                  </label>
+                  {errors.date && <p className="error">{errors.date}</p>}
+                  
+                  <button 
+                    onClick={handleSubmitFpsMode}
+                    className="submit-btn"
+                  >
+                    Proposer le FPS Mode
                   </button>
                 </div>
               )}

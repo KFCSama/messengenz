@@ -126,11 +126,18 @@ button:hover {
   margin: 5px 0;
 }
 
-.question-form {
-  margin: 15px 0;
-  padding: 15px;
-  background: #f0f7ff;
+.question-form select {
+  padding: 8px;
+  margin: 8px 0;
+  border: 1px solid #ccc;
   border-radius: 4px;
+  width: 100%;
+}
+
+.question-form label {
+  display: block;
+  margin: 10px 0;
+  font-weight: bold;
 }
 
 .checkbox-label {

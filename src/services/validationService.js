@@ -16,16 +16,18 @@ class ValidationService {
   async init() {
     try {
       // Chargement dynamique des schémas
-      const [noyau, lambda, partie] = await Promise.all([
+      const [noyau, lambda, partie, fpsMode] = await Promise.all([
         import('../schemas/schema-noyau.json'),
         import('../schemas/schema-lambda.json'),
         import('../schemas/schema-partie.json'),
+        import('../schemas/schema-fps-mode.json'),
       ]);
       
       this.schemas = {
         core: noyau.default,
         lambda: lambda.default,
-        partie: partie.default
+        partie: partie.default,
+        'fps-mode': fpsMode.default,
       };
 
       this.compileSchemas();
@@ -51,9 +53,9 @@ class ValidationService {
   getSchemaDefinition(typeName) {
     if (!this.schemas.core) return null;
     
-    // Recherche dans les types du schéma noyau
-    const typeDefinition = this.schemas.core.types[typeName];
-    if (typeDefinition) return typeDefinition.validation;
+    // Recherche dans les définitions du schéma noyau
+    const typeDefinition = this.schemas.core.definitions[typeName];
+    if (typeDefinition) return typeDefinition;
     
     return null;
   }
