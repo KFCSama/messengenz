@@ -18,7 +18,7 @@ const Message = ({ message }) => {
           </>
         ) : message.type === 'fps-mode' ? (
           <>
-            <p><strong>Mode FPS:</strong> {message.questionText}</p>
+            <p><strong>Jeu FPS:</strong> {message.questionText}</p>
             <p><strong>Date:</strong> {new Date(message.date).toLocaleString()}</p>
             {message.mode && <p><strong>Type:</strong> {message.mode}</p>}
           </>
