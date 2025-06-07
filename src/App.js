@@ -3,6 +3,7 @@ import validationService from './services/validationService';
 import Message from './components/Message';
 import ThreadSelector from './components/ThreadSelector';
 import PluginManager from './components/PluginManager';
+import ClientInput from './components/ClientInput';
 import './App.css';
 
 function App() {
@@ -25,13 +26,10 @@ function App() {
   const [leftMessage, setLeftMessage] = useState('');
   const [rightMessage, setRightMessage] = useState('');
 
-  const [showQuestionForm, setShowQuestionForm] = useState(false);
   const [questionData, setQuestionData] = useState({questionText: '', luEtAccepte: false});
 
-  const [showPartieForm, setShowPartieForm] = useState(false);
   const [partieData, setPartieData] = useState({questionText: '', date: ''});
 
-  const [showFpsModeForm, setShowFpsModeForm] = useState(false);
   const [fpsModeData, setFpsModeData] = useState({questionText: '', date: '', mode: 'Deathmatch'});
 
   const [errors, setErrors] = useState({});
@@ -120,6 +118,7 @@ function App() {
 
   // Envoi d'une question structurée
   const handleSubmitQuestion = () => {
+    console.log('handleSubmitQuestion called with data:', questionData);
     // Vérification de la version des schémas
     const lambdaSchema = validationService.getSchema('lambda');
     if (!lambdaSchema) {
@@ -158,13 +157,13 @@ function App() {
       [{ name: 'lambda', version: availablePlugins['lambda'].version }]
     );
     
-    setShowQuestionForm(false);
     setQuestionData({ questionText: '', luEtAccepte: false });
     setErrors({});
   };
 
   // Envoi d'une proposition de partie
   const handleSubmitPartie = () => {
+    console.log('handleSubmitPartie called with data:', partieData);
     const partieSchema = validationService.getSchema('partie');
     if (!partieSchema) {
       setErrors({ general: 'Schéma partie non chargé' });
@@ -204,13 +203,14 @@ function App() {
       [{ name: 'partie', version: availablePlugins['partie'].version }]
     );
     
-    setShowPartieForm(false);
     setPartieData({ questionText: '', date: '' });
     setErrors({});
   };
 
   // Envoi d'une proposition de partie en mode FPS
   const handleSubmitFpsMode = () => {
+    console.log('handleSubmitFpsMode called with data:', fpsModeData);
+    
     const fpsModeSchema = validationService.getSchema('fps-mode');
     if (!fpsModeSchema) {
       setErrors({ general: 'Schéma FPS mode non chargé' });
@@ -256,7 +256,6 @@ function App() {
       [{ name: 'fps-mode', version: availablePlugins['fps-mode'].version }]
     );
     
-    setShowFpsModeForm(false);
     setFpsModeData({ questionText: '', date: '', mode: 'Deathmatch' });
     setErrors({});
   };
@@ -290,7 +289,25 @@ function App() {
           </div>
           
           <div className="message-forms">
-            <div className="left-form">
+            <ClientInput
+              side="Gauche"
+              color="#4285f4"
+              activePlugins={activePlugins}
+              onSendMessage={(...args) => {sendMessage(...args)}}
+              onHandleSubmitFpsMode={(...args) => {handleSubmitFpsMode(...args)}}
+              onHandleSubmitPartie={(...args) => {handleSubmitPartie(...args)}}
+              onHandleSubmitQuestion={(...args) => {handleSubmitQuestion(...args)}}
+            />
+            <ClientInput
+              side="Droite"
+              color="#34a853"
+              activePlugins={activePlugins}
+              onSendMessage={(...args) => {sendMessage(...args)}}
+              onHandleSubmitFpsMode={(...args) => {handleSubmitFpsMode(...args)}}
+              onHandleSubmitPartie={(...args) => {handleSubmitPartie(...args)}}
+              onHandleSubmitQuestion={(...args) => {handleSubmitQuestion(...args)}}
+            />
+            {/* <div className="left-form">
               <h3>Client Gauche</h3>
               
               {activePlugins.includes('lambda') && (
@@ -461,7 +478,7 @@ function App() {
               >
                 Envoyer
               </button>
-            </div>
+            </div> */}
           </div>
         </div>
       </div>
