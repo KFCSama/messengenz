@@ -85,6 +85,7 @@ export default function ClientInput({
             [{ name: "lambda", version: availablePlugins["lambda"].version }]
         );
 
+        setShowQuestionForm(false);
         setQuestionData({ questionText: "", luEtAccepte: false });
         setErrors({});
     };
@@ -140,6 +141,7 @@ export default function ClientInput({
             [{ name: "partie", version: availablePlugins["partie"].version }]
         );
 
+        setShowPartieForm(false);
         setPartieData({ questionText: "", date: "" });
         setErrors({});
     };
@@ -210,6 +212,7 @@ export default function ClientInput({
             ]
         );
 
+        setShowFpsModeForm(false);
         setFpsModeData({ questionText: "", date: "", mode: "Deathmatch" });
         setErrors({});
     };
@@ -277,10 +280,7 @@ export default function ClientInput({
                     )}
 
                     <button
-                        onClick={() => {
-                            handleSubmitQuestion();
-                            setShowQuestionForm(false);
-                        }}
+                        onClick={handleSubmitQuestion}
                         className="submit-btn"
                     >
                         Envoyer la question
@@ -320,10 +320,7 @@ export default function ClientInput({
                     {errors.date && <p className="error">{errors.date}</p>}
 
                     <button
-                        onClick={() => {
-                            handleSubmitPartie();
-                            setShowPartieForm(false);
-                        }}
+                        onClick={handleSubmitPartie}
                         className="submit-btn"
                     >
                         Proposer la partie
@@ -382,10 +379,7 @@ export default function ClientInput({
                     {errors.date && <p className="error">{errors.date}</p>}
 
                     <button
-                        onClick={() => {
-                            handleSubmitFpsMode();
-                            setShowFpsModeForm(false);
-                        }}
+                        onClick={handleSubmitFpsMode}
                         className="submit-btn"
                     >
                         Proposer le FPS Mode
