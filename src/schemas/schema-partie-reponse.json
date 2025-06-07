@@ -1,0 +1,54 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "schema-partie-reponse.json",
+  "type": "object",
+  "required": [
+    "lu",
+    "date"
+  ],
+  "definitions": {
+    "yesResponse": {
+      "type": "object",
+      "properties": {
+        "accept": {
+          "type": "boolean",
+          "const": true
+        }
+      },
+      "required": [
+        "accept"
+      ]
+    },
+    "noResponse": {
+      "type": "object",
+      "properties": {
+        "accept": {
+          "type": "boolean",
+          "const": false
+        },
+        "newDate": {
+          "$ref": "schema-noyau.json#/definitions/dateTime"
+        }
+      },
+      "required": [
+        "accept",
+        "newDate"
+      ]
+    }
+  },
+  "properties": {
+    "read": {
+      "$ref": "schema-noyau.json#/definitions/checkbox"
+    },
+    "response": {
+      "anyOf": [
+        {
+          "$ref": "#/definitions/yesResponse"
+        },
+        {
+          "$ref": "#/definitions/noResponse"
+        }
+      ]
+    }
+  }
+}
