@@ -1,7 +1,16 @@
-import "./ClientInput.css";
 import { useState } from "react";
+import validationService from '../services/validationService';
 
-export default function ClientInput({ side, color, activePlugins, onSendMessage, onHandleSubmitFpsMode, onHandleSubmitPartie, onHandleSubmitQuestion }) {
+import "./ClientInput.css";
+
+export default function ClientInput({
+    side,
+    color,
+    activePlugins,
+    availablePlugins,
+    onSendMessage,
+    onCreateNewThread
+}) {
     const [message, setMessage] = useState("");
 
     const [showQuestionForm, setShowQuestionForm] = useState(false);
@@ -24,7 +33,186 @@ export default function ClientInput({ side, color, activePlugins, onSendMessage,
     });
 
     const [errors, setErrors] = useState({});
-    
+
+    // Envoi d'une question structurée
+    const handleSubmitQuestion = () => {
+        console.log("handleSubmitQuestion called with data:", questionData);
+        // Vérification de la version des schémas
+        const lambdaSchema = validationService.getSchema("lambda");
+        if (!lambdaSchema) {
+            setErrors({ general: "Schéma lambda non chargé" });
+            return;
+        }
+
+        // Validation avec AJV
+        const validationResult = validationService.validate(
+            questionData,
+            "lambda"
+        );
+
+        if (!validationResult.isValid) {
+            const formattedErrors = {};
+            validationResult.errors.forEach((error) => {
+                // Meilleure gestion du chemin de l'erreur
+                const fieldName =
+                    error.params?.missingProperty ||
+                    error.instancePath?.replace("/", "") ||
+                    "general";
+                formattedErrors[fieldName] =
+                    error.message || "Erreur de validation";
+            });
+            setErrors(formattedErrors);
+            return;
+        }
+
+        // Création du message
+        const questionMessage = {
+            ...questionData,
+            sender: side,
+            type: "question",
+            sentAt: new Date().toISOString(),
+            schema: {
+                name: "lambda",
+                version: availablePlugins["lambda"].version,
+            },
+        };
+
+        onCreateNewThread(
+            `Question: ${questionData.questionText.substring(0, 20)}${
+                questionData.questionText.length > 20 ? "..." : ""
+            }`,
+            questionMessage,
+            [{ name: "lambda", version: availablePlugins["lambda"].version }]
+        );
+
+        setQuestionData({ questionText: "", luEtAccepte: false });
+        setErrors({});
+    };
+
+    // Envoi d'une proposition de partie
+    const handleSubmitPartie = () => {
+        console.log("handleSubmitPartie called with data:", partieData);
+        const partieSchema = validationService.getSchema("partie");
+        if (!partieSchema) {
+            setErrors({ general: "Schéma partie non chargé" });
+            return;
+        }
+
+        const isoDate = partieData.date
+            ? new Date(partieData.date).toISOString()
+            : "";
+
+        const validationResult = validationService.validate(
+            { ...partieData, date: isoDate },
+            "partie"
+        );
+
+        if (!validationResult.isValid) {
+            const formattedErrors = {};
+            validationResult.errors.forEach((error) => {
+                const fieldName =
+                    error.params?.missingProperty ||
+                    error.instancePath?.replace("/", "") ||
+                    "general";
+                formattedErrors[fieldName] =
+                    error.message || "Erreur de validation";
+            });
+            setErrors(formattedErrors);
+            return;
+        }
+
+        const partieMessage = {
+            ...partieData,
+            sender: side,
+            type: "partie",
+            sentAt: new Date().toISOString(),
+            schema: {
+                name: "partie",
+                version: availablePlugins["partie"].version,
+            },
+        };
+
+        onCreateNewThread(
+            `Partie: ${partieData.questionText.substring(0, 20)}${
+                partieData.questionText.length > 20 ? "..." : ""
+            }`,
+            partieMessage,
+            [{ name: "partie", version: availablePlugins["partie"].version }]
+        );
+
+        setPartieData({ questionText: "", date: "" });
+        setErrors({});
+    };
+
+    // Envoi d'une proposition de partie en mode FPS
+    const handleSubmitFpsMode = () => {
+        console.log("handleSubmitFpsMode called with data:", fpsModeData);
+
+        const fpsModeSchema = validationService.getSchema("fps-mode");
+        if (!fpsModeSchema) {
+            setErrors({ general: "Schéma FPS mode non chargé" });
+            return;
+        }
+
+        const isoDate = fpsModeData.date
+            ? new Date(fpsModeData.date).toISOString()
+            : "";
+
+        // Ajout des secondes si nécessaire
+        const dataToValidate = {
+            ...fpsModeData,
+            date: fpsModeData.date.includes(":00")
+                ? fpsModeData.date
+                : fpsModeData.date + ":00",
+        };
+
+        const validationResult = validationService.validate(
+            { ...fpsModeData, date: isoDate },
+            "fps-mode"
+        );
+
+        if (!validationResult.isValid) {
+            const formattedErrors = {};
+            validationResult.errors.forEach((error) => {
+                const fieldName =
+                    error.params?.missingProperty ||
+                    error.instancePath?.replace("/", "") ||
+                    "general";
+                formattedErrors[fieldName] =
+                    error.message || "Erreur de validation";
+            });
+            setErrors(formattedErrors);
+            return;
+        }
+
+        const fpsModeMessage = {
+            ...dataToValidate,
+            sender: side,
+            type: "fps-mode",
+            sentAt: new Date().toISOString(),
+            schema: {
+                name: "fps-mode",
+                version: availablePlugins["fps-mode"].version,
+            },
+        };
+
+        onCreateNewThread(
+            `FPS ${fpsModeData.mode}: ${fpsModeData.questionText.substring(
+                0,
+                20
+            )}${fpsModeData.questionText.length > 20 ? "..." : ""}`,
+            fpsModeMessage,
+            [
+                {
+                    name: "fps-mode",
+                    version: availablePlugins["fps-mode"].version,
+                },
+            ]
+        );
+
+        setFpsModeData({ questionText: "", date: "", mode: "Deathmatch" });
+        setErrors({});
+    };
 
     return (
         <div className="form-group" style={{ "--color": color }}>
@@ -90,7 +278,7 @@ export default function ClientInput({ side, color, activePlugins, onSendMessage,
 
                     <button
                         onClick={() => {
-                            onHandleSubmitQuestion();
+                            handleSubmitQuestion();
                             setShowQuestionForm(false);
                         }}
                         className="submit-btn"
@@ -131,10 +319,13 @@ export default function ClientInput({ side, color, activePlugins, onSendMessage,
                     </label>
                     {errors.date && <p className="error">{errors.date}</p>}
 
-                    <button onClick={() => {
-                        onHandleSubmitPartie();
-                        setShowPartieForm(false);
-                    }} className="submit-btn">
+                    <button
+                        onClick={() => {
+                            handleSubmitPartie();
+                            setShowPartieForm(false);
+                        }}
+                        className="submit-btn"
+                    >
                         Proposer la partie
                     </button>
                 </div>
@@ -192,7 +383,7 @@ export default function ClientInput({ side, color, activePlugins, onSendMessage,
 
                     <button
                         onClick={() => {
-                            onHandleSubmitFpsMode();
+                            handleSubmitFpsMode();
                             setShowFpsModeForm(false);
                         }}
                         className="submit-btn"
