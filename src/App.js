@@ -206,7 +206,7 @@ function App() {
 
   // Envoi d'une proposition de partie en mode FPS
   const handleSubmitFpsMode = () => {
-    const fpsModeSchema = validationService.getSchema('fpsMode'); // Notez le nom exact
+    const fpsModeSchema = validationService.getSchema('fps-mode');
     if (!fpsModeSchema) {
       setErrors({ general: 'Schéma FPS mode non chargé' });
       return;

@@ -27,7 +27,7 @@ class ValidationService {
         core: noyau.default,
         lambda: lambda.default,
         partie: partie.default,
-        fpsMode: fpsMode.default,
+        'fps-mode': fpsMode.default,
       };
 
       this.compileSchemas();
