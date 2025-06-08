@@ -42,4 +42,18 @@ The build is minified and the filenames include the hashes.
 4. Push the branch (git push origin feature/your-feature).
 5. Open a Pull Request.
 
+##
+
+**APP5 Info**
+
+Alexis HU, aka KFCSama
+
+Charly SCHMIDT, aka Picorims
+
+Arnaud BULTEAU, aka nano1342
+
+Olivier PROQUEZ, aka Baryum
+
+Maxime LE BOT, aka GaroshurlaTAMER
+
 **Enjoy!**
