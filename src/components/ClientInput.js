@@ -238,20 +238,6 @@ export default function ClientInput({
 
         console.log("Validation result:", validationResult);
 
-        //FIXME: if accept is false, newDate is set as not respecting the format.
-        // This, besides being set and seeming valid.
-
-        // For example, the folloginw JSON is accepted by JSON Everything,
-        // but not by the validate function. It is unclear why.
-        /**
-        {
-            "response": {
-                "accept": false,
-                "newDate": "8274-04-25T18:41"
-            }
-        }
-         */
-
         if (!validationResult.isValid) {
             const formattedErrors = {};
             validationResult.errors.forEach((error) => {
