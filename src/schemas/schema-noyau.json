@@ -39,8 +39,7 @@
       "minLength": 1
     },
     "checkbox": {
-      "type": "boolean",
-      "const": true
+      "type": "boolean"
     },
     "multipleChoiceOption": {
       "type": "string",

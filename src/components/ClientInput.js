@@ -17,9 +17,8 @@ export default function ClientInput({
 
     const [showQuestionForm, setShowQuestionForm] = useState(false);
     const [questionData, setQuestionData] = useState({
-        questionText: "",
-        luEtAccepte: false,
-    });
+        questionText: ""
+        });
 
     const [showPartieForm, setShowPartieForm] = useState(false);
     const [partieData, setPartieData] = useState({
@@ -34,6 +33,7 @@ export default function ClientInput({
         mode: "Deathmatch",
     });
 
+    const [lambdaReponseChecked, setLambdaReponseChecked] = useState(false);
     const [partieReponseData, setPartieReponseData] = useState({
         response: {
             accept: true,
@@ -55,7 +55,7 @@ export default function ClientInput({
 
         // Validation avec AJV
         const validationResult = validationService.validate(
-            questionData,
+            { questionText: questionData.questionText },
             "lambda"
         );
 
@@ -76,15 +76,12 @@ export default function ClientInput({
 
         // Création du message
         const questionMessage = {
-            ...questionData,
+            questionText: questionData.questionText,
             sender: side,
             type: "question",
-            expectType: null,
+            expectType: "lambda-reponse",
             sentAt: new Date().toISOString(),
-            schema: {
-                name: "lambda",
-                version: availablePlugins["lambda"].version,
-            },
+            schema: { name: "lambda", version: availablePlugins["lambda"].version },
         };
 
         onCreateNewThread(
@@ -92,11 +89,11 @@ export default function ClientInput({
                 questionData.questionText.length > 20 ? "..." : ""
             }`,
             questionMessage,
-            { name: "lambda", version: availablePlugins["lambda"].version }
+            [{ name: "lambda", version: availablePlugins["lambda"].version }]
         );
 
         setShowQuestionForm(false);
-        setQuestionData({ questionText: "", luEtAccepte: false });
+        setQuestionData({ questionText: ""});
         setErrors({});
     };
 
@@ -136,10 +133,7 @@ export default function ClientInput({
             type: "partie",
             expectType: "partie-reponse",
             sentAt: new Date().toISOString(),
-            schema: {
-                name: "partie",
-                version: availablePlugins["partie"].version,
-            },
+            schema: { name: "partie", version: availablePlugins["partie"].version }
         };
 
         onCreateNewThread(
@@ -147,7 +141,7 @@ export default function ClientInput({
                 partieData.questionText.length > 20 ? "..." : ""
             }`,
             partieMessage,
-            { name: "partie", version: availablePlugins["partie"].version }
+            [{ name: "partie", version: availablePlugins["partie"].version }]
         );
 
         setShowPartieForm(false);
@@ -200,10 +194,7 @@ export default function ClientInput({
             type: "fps-mode",
             expectType: "partie-reponse",
             sentAt: new Date().toISOString(),
-            schema: {
-                name: "fps-mode",
-                version: availablePlugins["fps-mode"].version,
-            },
+            schema: { name: "fps-mode", version: availablePlugins["fps-mode"].version }
         };
 
         onCreateNewThread(
@@ -212,10 +203,7 @@ export default function ClientInput({
                 20
             )}${fpsModeData.questionText.length > 20 ? "..." : ""}`,
             fpsModeMessage,
-            {
-                name: "fps-mode",
-                version: availablePlugins["fps-mode"].version,
-            }
+            [{ name: "fps-mode", version: availablePlugins["fps-mode"].version }]
         );
 
         setShowFpsModeForm(false);
@@ -346,23 +334,6 @@ export default function ClientInput({
                         <p className="error">{errors.questionText}</p>
                     )}
 
-                    <label className="checkbox-label">
-                        <input
-                            type="checkbox"
-                            checked={questionData.luEtAccepte}
-                            onChange={(e) =>
-                                setQuestionData({
-                                    ...questionData,
-                                    luEtAccepte: e.target.checked,
-                                })
-                            }
-                        />
-                        Lu et accepté
-                    </label>
-                    {errors.luEtAccepte && (
-                        <p className="error">{errors.luEtAccepte}</p>
-                    )}
-
                     <button
                         onClick={handleSubmitQuestion}
                         className="submit-btn"
@@ -488,7 +459,72 @@ export default function ClientInput({
             )}
 
             {/* constrained messages */}
+            {/* Lambda response */}
+            {!noConstraint && lastMessage !== null && lastMessage.expectType === "lambda-reponse" && lastMessage.sender !== side && (
+                <div className="question-form">
+                    <p><strong>Question:</strong> {lastMessage.questionText}</p>
+                    <div style={{ display: "flex", gap: "10px", margin: "10px 0" }}>
+                        <button
+                            onClick={() => {
+                                // Validation avec le schéma de réponse
+                                const validationResult = validationService.validate(
+                                    { luEtAccepte: true },
+                                    "lambda-reponse"
+                                );
+                                if (!validationResult.isValid) {
+                                    setErrors({ luEtAccepte: "Vous devez lire et accepter." });
+                                    return;
+                                }
+                                onSendMessageRaw({
+                                    sender: side,
+                                    type: "lambda-reponse",
+                                    luEtAccepte: true,
+                                    expectType: null,
+                                    sentAt: new Date().toISOString(),
+                                    schema: { name: "lambda-reponse", version: availablePlugins["lambda"].version },
+                                });
+                                setLambdaReponseChecked(false);
+                                setErrors({});
+                            }}
+                            className="send-btn"
+                        >
+                            Lu et accepté
+                        </button>
+                        <button
+                            style={{ background: "#d32f2f" }}
+                            onClick={() => {
+                                // Validation avec le schéma de réponse
+                                const validationResult = validationService.validate(
+                                    { luEtAccepte: false },
+                                    "lambda-reponse"
+                                );
+                                if (!validationResult.isValid) {
+                                    setErrors({ luEtAccepte: "Vous devez lire et refuser." });
+                                    return;
+                                }
+                                onSendMessageRaw({
+                                    sender: side,
+                                    type: "lambda-reponse",
+                                    luEtAccepte: false,
+                                    expectType: null,
+                                    sentAt: new Date().toISOString(),
+                                    schema: { name: "lambda-reponse", version: availablePlugins["lambda"].version },
+                                });
+                                setLambdaReponseChecked(false);
+                                setErrors({});
+                            }}
+                            className="send-btn"
+                        >
+                            Lu et refusé
+                        </button>
+                    </div>
+                    {errors.luEtAccepte && (
+                        <p className="error">{errors.luEtAccepte}</p>
+                    )}
+                </div>
+            )}
 
+            {/* Partie response */}
             {!noConstraint && lastMessage !== null && lastMessage.expectType === "partie-reponse" && (
                 <>
                     <label className="checkbox-label">

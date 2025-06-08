@@ -9,7 +9,14 @@ const Message = ({ message }) => {
         {message.type === 'question' ? (
           <>
             <p><strong>Question:</strong> {message.questionText}</p>
-            <p><strong>Accepté:</strong> {message.luEtAccepte ? '✅ Oui' : '❌ Non'}</p>
+          </>
+        ) : message.type === 'lambda-reponse' ? (
+          <>
+            <p>
+              <strong>Réponse :</strong> 
+              {message.luEtAccepte === true && " Lu et accepté ✅ Oui"}
+              {message.luEtAccepte === false && " Lu et refusé ❌ Non"}
+            </p>
           </>
         ) : message.type === 'partie' ? (
           <>
