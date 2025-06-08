@@ -109,9 +109,7 @@ export default function ClientInput({
             return;
         }
 
-        const isoDate = partieData.date
-            ? new Date(partieData.date).toISOString()
-            : "";
+        const isoDate = partieData.date? new Date(partieData.date).toISOString() : "";
 
         const validationResult = validationService.validate(
             { ...partieData, date: isoDate },
@@ -167,9 +165,7 @@ export default function ClientInput({
             return;
         }
 
-        const isoDate = fpsModeData.date
-            ? new Date(fpsModeData.date).toISOString()
-            : "";
+        const isoDate = fpsModeData.date? new Date(fpsModeData.date).toISOString() : "";
 
         // Ajout des secondes si nécessaire
         const dataToValidate = {
@@ -253,20 +249,6 @@ export default function ClientInput({
         );
 
         console.log("Validation result:", validationResult);
-
-        //FIXME: if accept is false, newDate is set as not respecting the format.
-        // This, besides being set and seeming valid.
-
-        // For example, the folloginw JSON is accepted by JSON Everything,
-        // but not by the validate function. It is unclear why.
-        /**
-        {
-            "response": {
-                "accept": false,
-                "newDate": "8274-04-25T18:41"
-            }
-        }
-         */
 
         if (!validationResult.isValid) {
             const formattedErrors = {};
