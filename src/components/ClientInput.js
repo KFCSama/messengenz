@@ -17,9 +17,8 @@ export default function ClientInput({
 
     const [showQuestionForm, setShowQuestionForm] = useState(false);
     const [questionData, setQuestionData] = useState({
-        questionText: "",
-        luEtAccepte: false,
-    });
+        questionText: ""
+        });
 
     const [showPartieForm, setShowPartieForm] = useState(false);
     const [partieData, setPartieData] = useState({
@@ -34,6 +33,7 @@ export default function ClientInput({
         mode: "Deathmatch",
     });
 
+    const [lambdaReponseChecked, setLambdaReponseChecked] = useState(false);
     const [partieReponseData, setPartieReponseData] = useState({
         response: {
             accept: true,
@@ -55,7 +55,7 @@ export default function ClientInput({
 
         // Validation avec AJV
         const validationResult = validationService.validate(
-            questionData,
+            { questionText: questionData.questionText },
             "lambda"
         );
 
@@ -76,10 +76,10 @@ export default function ClientInput({
 
         // Création du message
         const questionMessage = {
-            ...questionData,
+            questionText: questionData.questionText,
             sender: side,
             type: "question",
-            expectType: null,
+            expectType: "lambda-reponse",
             sentAt: new Date().toISOString(),
             schema: { name: "lambda", version: availablePlugins["lambda"].version },
         };
@@ -93,7 +93,7 @@ export default function ClientInput({
         );
 
         setShowQuestionForm(false);
-        setQuestionData({ questionText: "", luEtAccepte: false });
+        setQuestionData({ questionText: ""});
         setErrors({});
     };
 
@@ -334,23 +334,6 @@ export default function ClientInput({
                         <p className="error">{errors.questionText}</p>
                     )}
 
-                    <label className="checkbox-label">
-                        <input
-                            type="checkbox"
-                            checked={questionData.luEtAccepte}
-                            onChange={(e) =>
-                                setQuestionData({
-                                    ...questionData,
-                                    luEtAccepte: e.target.checked,
-                                })
-                            }
-                        />
-                        Lu et accepté
-                    </label>
-                    {errors.luEtAccepte && (
-                        <p className="error">{errors.luEtAccepte}</p>
-                    )}
-
                     <button
                         onClick={handleSubmitQuestion}
                         className="submit-btn"
@@ -476,7 +459,51 @@ export default function ClientInput({
             )}
 
             {/* constrained messages */}
+            {/* Lambda response */}
+            {!noConstraint && lastMessage !== null && lastMessage.expectType === "lambda-reponse" && lastMessage.sender !== side && (
+                <div className="question-form">
+                    <p><strong>Question:</strong> {lastMessage.questionText}</p>
+                    <label className="checkbox-label">
+                        <input
+                            type="checkbox"
+                            checked={lambdaReponseChecked}
+                            onChange={(e) => setLambdaReponseChecked(e.target.checked)}
+                        />
+                        Lu et accepté
+                    </label>
+                    {errors.luEtAccepte && (
+                        <p className="error">{errors.luEtAccepte}</p>
+                    )}
+                    <button
+                        onClick={() => {
+                            // Validation avec le schéma de réponse
+                            const validationResult = validationService.validate(
+                                { luEtAccepte: lambdaReponseChecked },
+                                "lambda-reponse"
+                            );
+                            if (!validationResult.isValid) {
+                                setErrors({ luEtAccepte: "Vous devez lire et accepter." });
+                                return;
+                            }
+                            onSendMessageRaw({
+                                sender: side,
+                                type: "lambda-reponse",
+                                luEtAccepte: true,
+                                expectType: null,
+                                sentAt: new Date().toISOString(),
+                                schema: { name: "lambda-reponse", version: availablePlugins["lambda"].version },
+                            });
+                            setLambdaReponseChecked(false);
+                            setErrors({});
+                        }}
+                        className="send-btn"
+                    >
+                        Répondre
+                    </button>
+                </div>
+            )}
 
+            {/* Partie response */}
             {!noConstraint && lastMessage !== null && lastMessage.expectType === "partie-reponse" && (
                 <>
                     <label className="checkbox-label">
