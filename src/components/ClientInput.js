@@ -1,5 +1,5 @@
-import { useState } from "react";
-import validationService from '../services/validationService';
+import { useState, useEffect } from "react";
+import validationService from "../services/validationService";
 
 import "./ClientInput.css";
 
@@ -9,7 +9,9 @@ export default function ClientInput({
     activePlugins,
     availablePlugins,
     onSendMessage,
-    onCreateNewThread
+    onSendMessageRaw,
+    onCreateNewThread,
+    lastMessage,
 }) {
     const [message, setMessage] = useState("");
 
@@ -32,7 +34,14 @@ export default function ClientInput({
         mode: "Deathmatch",
     });
 
+    const [partieReponseData, setPartieReponseData] = useState({
+        response: {
+            accept: true,
+        }
+    });
+
     const [errors, setErrors] = useState({});
+    const [noConstraint, setNoConstraint] = useState(true);
 
     // Envoi d'une question structurée
     const handleSubmitQuestion = () => {
@@ -70,6 +79,7 @@ export default function ClientInput({
             ...questionData,
             sender: side,
             type: "question",
+            expectType: null,
             sentAt: new Date().toISOString(),
             schema: {
                 name: "lambda",
@@ -82,9 +92,10 @@ export default function ClientInput({
                 questionData.questionText.length > 20 ? "..." : ""
             }`,
             questionMessage,
-            [{ name: "lambda", version: availablePlugins["lambda"].version }]
+            { name: "lambda", version: availablePlugins["lambda"].version }
         );
 
+        setShowQuestionForm(false);
         setQuestionData({ questionText: "", luEtAccepte: false });
         setErrors({});
     };
@@ -125,6 +136,7 @@ export default function ClientInput({
             ...partieData,
             sender: side,
             type: "partie",
+            expectType: "partie-reponse",
             sentAt: new Date().toISOString(),
             schema: {
                 name: "partie",
@@ -137,9 +149,10 @@ export default function ClientInput({
                 partieData.questionText.length > 20 ? "..." : ""
             }`,
             partieMessage,
-            [{ name: "partie", version: availablePlugins["partie"].version }]
+            { name: "partie", version: availablePlugins["partie"].version }
         );
 
+        setShowPartieForm(false);
         setPartieData({ questionText: "", date: "" });
         setErrors({});
     };
@@ -189,6 +202,7 @@ export default function ClientInput({
             ...dataToValidate,
             sender: side,
             type: "fps-mode",
+            expectType: "partie-reponse",
             sentAt: new Date().toISOString(),
             schema: {
                 name: "fps-mode",
@@ -202,48 +216,127 @@ export default function ClientInput({
                 20
             )}${fpsModeData.questionText.length > 20 ? "..." : ""}`,
             fpsModeMessage,
-            [
-                {
-                    name: "fps-mode",
-                    version: availablePlugins["fps-mode"].version,
-                },
-            ]
+            {
+                name: "fps-mode",
+                version: availablePlugins["fps-mode"].version,
+            }
         );
 
+        setShowFpsModeForm(false);
         setFpsModeData({ questionText: "", date: "", mode: "Deathmatch" });
         setErrors({});
     };
+
+    const handleSubmitPartieReponse = () => {
+        console.log("handleSubmitPartieReponse called with data:", partieReponseData);
+        const partieReponseSchema = validationService.getSchema("partie-reponse");
+        if (!partieReponseSchema) {
+            setErrors({ general: "Schéma partie-reponse non chargé" });
+            return;
+        }
+
+        const validationResult = validationService.validate(
+            { ...partieReponseData },
+            "partie-reponse"
+        );
+
+        console.log("Validation result:", validationResult);
+
+        //FIXME: if accept is false, newDate is set as not respecting the format.
+        // This, besides being set and seeming valid.
+
+        // For example, the folloginw JSON is accepted by JSON Everything,
+        // but not by the validate function. It is unclear why.
+        /**
+        {
+            "response": {
+                "accept": false,
+                "newDate": "8274-04-25T18:41"
+            }
+        }
+         */
+
+        if (!validationResult.isValid) {
+            const formattedErrors = {};
+            validationResult.errors.forEach((error) => {
+                const fieldName =
+                    error.params?.missingProperty ||
+                    error.instancePath?.replace("/", "") ||
+                    "general";
+                formattedErrors[fieldName] =
+                    error.message || "Erreur de validation";
+            });
+            setErrors(formattedErrors);
+            return;
+        }
+
+        const partieReponseMessage = {
+            ...partieReponseData,
+            sender: side,
+            type: "partie-reponse",
+            expectType: null,
+            sentAt: new Date().toISOString(),
+            schema: {
+                name: "partie-reponse",
+                version: availablePlugins["partie"].version,
+            },
+        };
+
+        onSendMessageRaw(partieReponseMessage);
+
+        setPartieReponseData({
+            response: {
+                accept: true,
+            }
+        });
+        setErrors({});
+    };
+
+
+    useEffect(() => {
+        setNoConstraint(
+            lastMessage === null ||
+                side === lastMessage.sender ||
+                lastMessage.expectType === null
+        );
+    }, [lastMessage, side]);
 
     return (
         <div className="form-group" style={{ "--color": color }}>
             <h3>Client {side}</h3>
 
-            {activePlugins.includes("lambda") && (
+            {activePlugins.includes("lambda") && noConstraint && (
                 <button
                     onClick={() => setShowQuestionForm(!showQuestionForm)}
-                    className={`toggle-question-btn${showQuestionForm ? ' active cancel-btn' : ''}`}
+                    className={`toggle-question-btn${
+                        showQuestionForm ? " active cancel-btn" : ""
+                    }`}
                 >
                     {showQuestionForm ? "Annuler" : "Poser une question"}
                 </button>
             )}
-            {activePlugins.includes("partie") && (
+            {activePlugins.includes("partie") && noConstraint && (
                 <button
                     onClick={() => setShowPartieForm(!showPartieForm)}
-                    className={`toggle-question-btn${showPartieForm ? ' active cancel-btn' : ''}`}
+                    className={`toggle-question-btn${
+                        showPartieForm ? " active cancel-btn" : ""
+                    }`}
                 >
                     {showPartieForm ? "Annuler" : "Proposer une partie"}
                 </button>
             )}
-            {activePlugins.includes("fps-mode") && (
+            {activePlugins.includes("fps-mode") && noConstraint && (
                 <button
                     onClick={() => setShowFpsModeForm(!showFpsModeForm)}
-                    className={`toggle-question-btn${showFpsModeForm ? ' active cancel-btn' : ''}`}
+                    className={`toggle-question-btn${
+                        showFpsModeForm ? " active cancel-btn" : ""
+                    }`}
                 >
                     {showFpsModeForm ? "Annuler" : "Proposer un FPS Mode"}
                 </button>
             )}
 
-            {showQuestionForm && (
+            {showQuestionForm && noConstraint && (
                 <div className="question-form">
                     <textarea
                         value={questionData.questionText}
@@ -277,10 +370,7 @@ export default function ClientInput({
                     )}
 
                     <button
-                        onClick={() => {
-                            handleSubmitQuestion();
-                            setShowQuestionForm(false);
-                        }}
+                        onClick={handleSubmitQuestion}
                         className="submit-btn"
                     >
                         Envoyer la question
@@ -288,7 +378,7 @@ export default function ClientInput({
                 </div>
             )}
 
-            {showPartieForm && (
+            {showPartieForm && noConstraint && (
                 <div className="question-form">
                     <textarea
                         value={partieData.questionText}
@@ -319,19 +409,13 @@ export default function ClientInput({
                     </label>
                     {errors.date && <p className="error">{errors.date}</p>}
 
-                    <button
-                        onClick={() => {
-                            handleSubmitPartie();
-                            setShowPartieForm(false);
-                        }}
-                        className="submit-btn"
-                    >
+                    <button onClick={handleSubmitPartie} className="submit-btn">
                         Proposer la partie
                     </button>
                 </div>
             )}
 
-            {showFpsModeForm && (
+            {showFpsModeForm && noConstraint && (
                 <div className="question-form">
                     <textarea
                         value={fpsModeData.questionText}
@@ -382,10 +466,7 @@ export default function ClientInput({
                     {errors.date && <p className="error">{errors.date}</p>}
 
                     <button
-                        onClick={() => {
-                            handleSubmitFpsMode();
-                            setShowFpsModeForm(false);
-                        }}
+                        onClick={handleSubmitFpsMode}
                         className="submit-btn"
                     >
                         Proposer le FPS Mode
@@ -393,17 +474,74 @@ export default function ClientInput({
                 </div>
             )}
 
-            <textarea
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                placeholder="Écrivez votre message ici..."
-            />
-            <button
-                onClick={() => onSendMessage(message, side)}
-                className="send-btn"
-            >
-                Envoyer
-            </button>
+            {noConstraint && (
+                <>
+                    <textarea
+                        value={message}
+                        onChange={(e) => setMessage(e.target.value)}
+                        placeholder="Écrivez votre message ici..."
+                    />
+                    <button
+                        onClick={() => {
+                            onSendMessage(message, side, null);
+                            setMessage("");
+                        }}
+                        className="send-btn"
+                    >
+                        Envoyer
+                    </button>
+                </>
+            )}
+
+            {/* constrained messages */}
+
+            {!noConstraint && lastMessage !== null && lastMessage.expectType === "partie-reponse" && (
+                <>
+                    <label className="checkbox-label">
+                        <input
+                            type="checkbox"
+                            checked={partieReponseData.response.accept}
+                            onChange={(e) =>
+                                setPartieReponseData({
+                                    ...partieReponseData,
+                                    response: {
+                                        ...partieReponseData.response,
+                                        accept: e.target.checked
+                                    },
+                                })
+                            }
+                        />
+                        Accepté
+                    </label>
+                    {errors.accept && <p className="error">{errors.accept}</p>}
+
+                    {!partieReponseData.response.accept && (
+                        <>
+                            <label>
+                                Date et heure:
+                                <input
+                                    type="datetime-local"
+                                    value={partieReponseData.response.newDate ?? ""}
+                                    onChange={(e) =>
+                                        setPartieReponseData({
+                                            ...partieReponseData,
+                                            response: {
+                                                ...partieReponseData.response,
+                                                newDate: e.target.value,
+                                            },
+                                        })
+                                    }
+                                />
+                            </label>
+                            {errors.newDate && (
+                                <p className="error">{errors.newDate}</p>
+                            )}
+                        </>
+                    )}
+
+                    <button className="send-btn" onClick={handleSubmitPartieReponse}>Envoyer</button>
+                </>
+            )}
         </div>
     );
 }

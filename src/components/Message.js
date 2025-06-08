@@ -22,6 +22,13 @@ const Message = ({ message }) => {
             <p><strong>Date:</strong> {new Date(message.date).toLocaleString()}</p>
             {message.mode && <p><strong>Type:</strong> {message.mode}</p>}
           </>
+        ) : message.type === 'partie-reponse' ? (
+          <>
+            <p><strong>Accepte:</strong> {message.response.accept ? '✅ Oui' : '❌ Non'}</p>
+            {!message.response.accept && (
+              <p><strong>Date proposée:</strong> {new Date(message.response.newDate).toLocaleString()}</p>
+            )}
+          </>
         ) : (
           <p>{message.text}</p>
         )}

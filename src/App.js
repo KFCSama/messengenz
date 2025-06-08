@@ -23,8 +23,6 @@ function App() {
   const [activeThread, setActiveThread] = useState('main');
   
   // États pour les messages
-  const [leftMessage, setLeftMessage] = useState('');
-  const [rightMessage, setRightMessage] = useState('');
 
   const [errors, setErrors] = useState({});
 
@@ -70,7 +68,7 @@ function App() {
   };
 
   // Création d'un nouveau fil de discussion
-  const createNewThread = (title, firstMessage, schemas) => {
+  const createNewThread = (title, firstMessage, schema) => {
     const newThread = {
       id: `thread-${Date.now()}`,
       title,
@@ -78,7 +76,7 @@ function App() {
       createdAt: new Date().toISOString(),
       messages: [firstMessage],
       categories: ['general'],
-      schemas
+      schema
     };
     
     setThreads([...threads, newThread]);
@@ -86,7 +84,8 @@ function App() {
   };
 
   // Envoi d'un message standard
-  const sendMessage = (messageText, sender) => {
+  const sendMessage = (messageText, sender, expectType) => {
+    console.log('Sending message:', messageText, 'from', sender, 'expectType:', expectType);
     if (!messageText.trim()) {
       setErrors({ general: 'Veuillez entrer un message.' });
       return;
@@ -96,6 +95,7 @@ function App() {
       text: messageText, 
       sender,
       type: 'texte',
+      expectType,
       sentAt: new Date().toISOString()
     };
     
@@ -105,9 +105,17 @@ function App() {
         : thread
     ));
     
-    if (sender === 'Gauche') setLeftMessage('');
-    else setRightMessage('');
     setErrors({});
+  };
+
+  const sendMessageRaw = (msg) => {
+    console.log('Sending raw message:', msg);
+    
+    setThreads(threads.map(thread => 
+      thread.id === activeThread
+        ? { ...thread, messages: [...thread.messages, {...msg}] }
+        : thread
+    ));
   };
 
 
@@ -145,16 +153,20 @@ function App() {
               color="#4285f4"
               activePlugins={activePlugins}
               availablePlugins={availablePlugins}
-              onSendMessage={(...args) => {sendMessage(...args)}}
+              onSendMessage={sendMessage}
+              onSendMessageRaw={sendMessageRaw}
               onCreateNewThread={createNewThread}
+              lastMessage={threads.find(t => t.id === activeThread)?.messages.slice(-1)[0] || null}
             />
             <ClientInput
               side="Droite"
               color="#34a853"
               activePlugins={activePlugins}
               availablePlugins={availablePlugins}
-              onSendMessage={(...args) => {sendMessage(...args)}}
+              onSendMessage={sendMessage}
+              onSendMessageRaw={sendMessageRaw}
               onCreateNewThread={createNewThread}
+              lastMessage={threads.find(t => t.id === activeThread)?.messages.slice(-1)[0] || null}
             />
           </div>
         </div>

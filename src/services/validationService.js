@@ -16,11 +16,12 @@ class ValidationService {
   async init() {
     try {
       // Chargement dynamique des schémas
-      const [noyau, lambda, partie, fpsMode] = await Promise.all([
+      const [noyau, lambda, partie, fpsMode, partieReponse] = await Promise.all([
         import('../schemas/schema-noyau.json'),
         import('../schemas/schema-lambda.json'),
         import('../schemas/schema-partie.json'),
         import('../schemas/schema-fps-mode.json'),
+        import('../schemas/schema-partie-reponse.json')
       ]);
     
       this.schemas = {
@@ -28,6 +29,7 @@ class ValidationService {
         lambda: lambda.default,
         partie: partie.default,
         'fps-mode': fpsMode.default,
+        'partie-reponse': partieReponse.default
       };
 
       // Ajoute tous les schémas à AJV pour la résolution des $ref
@@ -35,6 +37,7 @@ class ValidationService {
       this.ajv.addSchema(lambda.default, 'schema-lambda.json');
       this.ajv.addSchema(partie.default, 'schema-partie.json');
       this.ajv.addSchema(fpsMode.default, 'schema-fps-mode.json');
+      this.ajv.addSchema(partieReponse.default, 'schema-partie-reponse.json');
 
       this.compileSchemas();
     } catch (error) {

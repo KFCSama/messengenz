@@ -1,0 +1,52 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "schema-partie-reponse.json",
+  "type": "object",
+  "required": [
+    "response"
+  ],
+  "definitions": {
+    "yesResponse": {
+      "type": "object",
+      "properties": {
+        "accept": {
+          "type": "boolean",
+          "const": true
+        }
+      },
+      "required": [
+        "accept"
+      ]
+    },
+    "noResponse": {
+      "type": "object",
+      "properties": {
+        "accept": {
+          "type": "boolean",
+          "const": false
+        },
+        "newDate": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Date au format ISO 8601 (YYYY-MM-DDTHH:MM:SSZ)"
+        }
+      },
+      "required": [
+        "accept",
+        "newDate"
+      ]
+    }
+  },
+  "properties": {
+    "response": {
+      "anyOf": [
+        {
+          "$ref": "#/definitions/yesResponse"
+        },
+        {
+          "$ref": "#/definitions/noResponse"
+        }
+      ]
+    }
+  }
+}
