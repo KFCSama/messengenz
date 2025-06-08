@@ -463,43 +463,64 @@ export default function ClientInput({
             {!noConstraint && lastMessage !== null && lastMessage.expectType === "lambda-reponse" && lastMessage.sender !== side && (
                 <div className="question-form">
                     <p><strong>Question:</strong> {lastMessage.questionText}</p>
-                    <label className="checkbox-label">
-                        <input
-                            type="checkbox"
-                            checked={lambdaReponseChecked}
-                            onChange={(e) => setLambdaReponseChecked(e.target.checked)}
-                        />
-                        Lu et accepté
-                    </label>
+                    <div style={{ display: "flex", gap: "10px", margin: "10px 0" }}>
+                        <button
+                            onClick={() => {
+                                // Validation avec le schéma de réponse
+                                const validationResult = validationService.validate(
+                                    { luEtAccepte: true },
+                                    "lambda-reponse"
+                                );
+                                if (!validationResult.isValid) {
+                                    setErrors({ luEtAccepte: "Vous devez lire et accepter." });
+                                    return;
+                                }
+                                onSendMessageRaw({
+                                    sender: side,
+                                    type: "lambda-reponse",
+                                    luEtAccepte: true,
+                                    expectType: null,
+                                    sentAt: new Date().toISOString(),
+                                    schema: { name: "lambda-reponse", version: availablePlugins["lambda"].version },
+                                });
+                                setLambdaReponseChecked(false);
+                                setErrors({});
+                            }}
+                            className="send-btn"
+                        >
+                            Lu et accepté
+                        </button>
+                        <button
+                            style={{ background: "#d32f2f" }}
+                            onClick={() => {
+                                // Validation avec le schéma de réponse
+                                const validationResult = validationService.validate(
+                                    { luEtAccepte: false },
+                                    "lambda-reponse"
+                                );
+                                if (!validationResult.isValid) {
+                                    setErrors({ luEtAccepte: "Vous devez lire et refuser." });
+                                    return;
+                                }
+                                onSendMessageRaw({
+                                    sender: side,
+                                    type: "lambda-reponse",
+                                    luEtAccepte: false,
+                                    expectType: null,
+                                    sentAt: new Date().toISOString(),
+                                    schema: { name: "lambda-reponse", version: availablePlugins["lambda"].version },
+                                });
+                                setLambdaReponseChecked(false);
+                                setErrors({});
+                            }}
+                            className="send-btn"
+                        >
+                            Lu et refusé
+                        </button>
+                    </div>
                     {errors.luEtAccepte && (
                         <p className="error">{errors.luEtAccepte}</p>
                     )}
-                    <button
-                        onClick={() => {
-                            // Validation avec le schéma de réponse
-                            const validationResult = validationService.validate(
-                                { luEtAccepte: lambdaReponseChecked },
-                                "lambda-reponse"
-                            );
-                            if (!validationResult.isValid) {
-                                setErrors({ luEtAccepte: "Vous devez lire et accepter." });
-                                return;
-                            }
-                            onSendMessageRaw({
-                                sender: side,
-                                type: "lambda-reponse",
-                                luEtAccepte: true,
-                                expectType: null,
-                                sentAt: new Date().toISOString(),
-                                schema: { name: "lambda-reponse", version: availablePlugins["lambda"].version },
-                            });
-                            setLambdaReponseChecked(false);
-                            setErrors({});
-                        }}
-                        className="send-btn"
-                    >
-                        Répondre
-                    </button>
                 </div>
             )}
 
