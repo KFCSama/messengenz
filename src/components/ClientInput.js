@@ -81,10 +81,7 @@ export default function ClientInput({
             type: "question",
             expectType: null,
             sentAt: new Date().toISOString(),
-            schema: {
-                name: "lambda",
-                version: availablePlugins["lambda"].version,
-            },
+            schema: { name: "lambda", version: availablePlugins["lambda"].version },
         };
 
         onCreateNewThread(
@@ -92,7 +89,7 @@ export default function ClientInput({
                 questionData.questionText.length > 20 ? "..." : ""
             }`,
             questionMessage,
-            { name: "lambda", version: availablePlugins["lambda"].version }
+            [{ name: "lambda", version: availablePlugins["lambda"].version }]
         );
 
         setShowQuestionForm(false);
@@ -109,9 +106,7 @@ export default function ClientInput({
             return;
         }
 
-        const isoDate = partieData.date
-            ? new Date(partieData.date).toISOString()
-            : "";
+        const isoDate = partieData.date? new Date(partieData.date).toISOString() : "";
 
         const validationResult = validationService.validate(
             { ...partieData, date: isoDate },
@@ -138,10 +133,7 @@ export default function ClientInput({
             type: "partie",
             expectType: "partie-reponse",
             sentAt: new Date().toISOString(),
-            schema: {
-                name: "partie",
-                version: availablePlugins["partie"].version,
-            },
+            schema: { name: "partie", version: availablePlugins["partie"].version }
         };
 
         onCreateNewThread(
@@ -149,7 +141,7 @@ export default function ClientInput({
                 partieData.questionText.length > 20 ? "..." : ""
             }`,
             partieMessage,
-            { name: "partie", version: availablePlugins["partie"].version }
+            [{ name: "partie", version: availablePlugins["partie"].version }]
         );
 
         setShowPartieForm(false);
@@ -167,9 +159,7 @@ export default function ClientInput({
             return;
         }
 
-        const isoDate = fpsModeData.date
-            ? new Date(fpsModeData.date).toISOString()
-            : "";
+        const isoDate = fpsModeData.date? new Date(fpsModeData.date).toISOString() : "";
 
         // Ajout des secondes si nécessaire
         const dataToValidate = {
@@ -204,10 +194,7 @@ export default function ClientInput({
             type: "fps-mode",
             expectType: "partie-reponse",
             sentAt: new Date().toISOString(),
-            schema: {
-                name: "fps-mode",
-                version: availablePlugins["fps-mode"].version,
-            },
+            schema: { name: "fps-mode", version: availablePlugins["fps-mode"].version }
         };
 
         onCreateNewThread(
@@ -216,10 +203,7 @@ export default function ClientInput({
                 20
             )}${fpsModeData.questionText.length > 20 ? "..." : ""}`,
             fpsModeMessage,
-            {
-                name: "fps-mode",
-                version: availablePlugins["fps-mode"].version,
-            }
+            [{ name: "fps-mode", version: availablePlugins["fps-mode"].version }]
         );
 
         setShowFpsModeForm(false);
