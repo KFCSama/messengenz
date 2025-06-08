@@ -235,8 +235,20 @@ export default function ClientInput({
             return;
         }
 
+        // Conversion de la date si accept est false et newDate existe
+        let dataToValidate = { ...partieReponseData };
+        if (partieReponseData.response?.accept === false && partieReponseData.response?.newDate) {
+            dataToValidate = {
+                ...partieReponseData,
+                response: {
+                    ...partieReponseData.response,
+                    newDate: new Date(partieReponseData.response.newDate).toISOString()
+                }
+            };
+        }
+
         const validationResult = validationService.validate(
-            { ...partieReponseData },
+            dataToValidate,
             "partie-reponse"
         );
 
